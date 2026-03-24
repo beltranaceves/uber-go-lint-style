@@ -1,0 +1,270 @@
+# Revive configuration for Uber Go Style Guide
+# This configuration file enables revive linter with standard rules
+# and placeholders for custom rules based on Uber's Go style guide.
+#
+# Reference: https://github.com/uber-go/guide/blob/master/style.md#linting
+
+# Global settings
+ignoreFailures = false
+severity = "warning"
+confidence = 0.8
+errorCode = 0
+warningCode = 0
+
+# Enabled rules from revive
+[[rule]]
+name = "atomic"
+severity = "warning"
+
+[[rule]]
+name = "blank-imports"
+severity = "warning"
+
+[[rule]]
+name = "bool-literal-in-expr"
+severity = "warning"
+
+[[rule]]
+name = "builtin-shadowing"
+severity = "warning"
+
+[[rule]]
+name = "case-handler-order"
+severity = "warning"
+
+[[rule]]
+name = "cognitive-complexity"
+severity = "warning"
+arguments = [7]
+
+[[rule]]
+name = "confusing-naming"
+severity = "warning"
+
+[[rule]]
+name = "confusing-results"
+severity = "warning"
+
+[[rule]]
+name = "constant-logical-expr"
+severity = "warning"
+
+[[rule]]
+name = "context-as-argument"
+severity = "warning"
+
+[[rule]]
+name = "context-keys-type"
+severity = "warning"
+
+[[rule]]
+name = "cyclomatic"
+severity = "warning"
+arguments = [15]
+
+[[rule]]
+name = "deep-exit"
+severity = "warning"
+
+[[rule]]
+name = "defer"
+severity = "warning"
+
+[[rule]]
+name = "dot-imports"
+severity = "error"
+
+[[rule]]
+name = "early-return"
+severity = "warning"
+
+[[rule]]
+name = "empty-block"
+severity = "warning"
+
+[[rule]]
+name = "empty-lines"
+severity = "warning"
+
+[[rule]]
+name = "error-naming"
+severity = "error"
+
+[[rule]]
+name = "error-strings"
+severity = "warning"
+
+[[rule]]
+name = "errorf"
+severity = "warning"
+
+[[rule]]
+name = "exported"
+severity = "warning"
+
+[[rule]]
+name = "flag-parameter"
+severity = "warning"
+
+[[rule]]
+name = "get-return"
+severity = "warning"
+
+[[rule]]
+name = "identical-branches"
+severity = "warning"
+
+[[rule]]
+name = "if-return"
+severity = "warning"
+
+[[rule]]
+name = "increment-decrement"
+severity = "warning"
+
+[[rule]]
+name = "indent-error-flow"
+severity = "warning"
+
+[[rule]]
+name = "modifies-parameter"
+severity = "warning"
+
+[[rule]]
+name = "modifies-value-receiver"
+severity = "warning"
+
+[[rule]]
+name = "package-comments"
+severity = "warning"
+
+[[rule]]
+name = "range"
+severity = "warning"
+
+[[rule]]
+name = "range-val-in-closure"
+severity = "warning"
+
+[[rule]]
+name = "range-val-address"
+severity = "warning"
+
+[[rule]]
+name = "receiver-naming"
+severity = "warning"
+
+[[rule]]
+name = "redefines-builtin-id"
+severity = "warning"
+
+[[rule]]
+name = "string-format"
+severity = "warning"
+arguments = [
+  "^fmt\\.(Print(f|ln)?|Sprintf)\\(",
+  "fmt.Print",
+  "fmt.Sprintf"
+]
+
+[[rule]]
+name = "string-of-int"
+severity = "warning"
+
+[[rule]]
+name = "struct-tag"
+severity = "warning"
+
+[[rule]]
+name = "superfluous-else"
+severity = "warning"
+
+[[rule]]
+name = "time-naming"
+severity = "warning"
+
+[[rule]]
+name = "unchecked-type-assertion"
+severity = "warning"
+
+[[rule]]
+name = "unconditional-recursion"
+severity = "warning"
+
+[[rule]]
+name = "unexported-naming"
+severity = "warning"
+
+[[rule]]
+name = "unexported-return"
+severity = "warning"
+
+[[rule]]
+name = "unhandled-error"
+severity = "warning"
+arguments = ["fmt.Fprintf", "fmt.Fprint"]
+
+[[rule]]
+name = "unnecessary-stmt"
+severity = "warning"
+
+[[rule]]
+name = "unreachable-code"
+severity = "warning"
+
+[[rule]]
+name = "unused-parameter"
+severity = "warning"
+
+[[rule]]
+name = "unused-receiver"
+severity = "warning"
+
+[[rule]]
+name = "use-any"
+severity = "warning"
+
+[[rule]]
+name = "useless-break"
+severity = "warning"
+
+[[rule]]
+name = "var-declaration"
+severity = "warning"
+
+[[rule]]
+name = "var-naming"
+severity = "warning"
+arguments = ["ID"]
+
+[[rule]]
+name = "waitgroup-by-value"
+severity = "warning"
+
+# Custom rules based on Uber Go Style Guide
+# Uncomment and configure as you implement custom rules
+
+# [[rule]]
+# name = "error-once"
+# severity = "error"
+# description = "Error variables should only be assigned once per scope (uber-go/guide#error-once)"
+
+# [[rule]]
+# name = "error-wrap"
+# severity = "warning"
+# description = "Errors should be wrapped with context (uber-go/guide#error-wrap)"
+
+# [[rule]]
+# name = "function-order"
+# severity = "warning"
+# description = "Functions should be ordered following conventions (uber-go/guide#function-order)"
+
+# [[rule]]
+# name = "enum-start"
+# severity = "warning"
+# description = "Enum values should start from zero (uber-go/guide#enum-start)"
+
+# [[rule]]
+# name = "defer-clean"
+# severity = "warning"
+# description = "Defers should be used for cleanup operations (uber-go/guide#defer-clean)"
