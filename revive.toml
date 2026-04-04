@@ -264,7 +264,236 @@ severity = "warning"
 # severity = "warning"
 # description = "Enum values should start from zero (uber-go/guide#enum-start)"
 
-# [[rule]]
-# name = "defer-clean"
-# severity = "warning"
-# description = "Defers should be used for cleanup operations (uber-go/guide#defer-clean)"
+# Custom Uber Go Style Guide Rules (auto-generated)
+
+[[rule]]
+name = "interface-pointer"
+severity = "warning"
+
+[[rule]]
+name = "interface-compliance"
+severity = "warning"
+
+[[rule]]
+name = "interface-receiver"
+severity = "warning"
+
+[[rule]]
+name = "mutex-zero-value"
+severity = "warning"
+
+[[rule]]
+name = "container-copy"
+severity = "warning"
+
+[[rule]]
+name = "defer-clean"
+severity = "warning"
+
+[[rule]]
+name = "channel-size"
+severity = "warning"
+
+[[rule]]
+name = "enum-start"
+severity = "warning"
+
+[[rule]]
+name = "time"
+severity = "warning"
+
+[[rule]]
+name = "type-assert"
+severity = "warning"
+
+[[rule]]
+name = "panic"
+severity = "warning"
+
+[[rule]]
+name = "atomic"
+severity = "warning"
+
+[[rule]]
+name = "global-mut"
+severity = "warning"
+
+[[rule]]
+name = "embed-public"
+severity = "warning"
+
+[[rule]]
+name = "builtin-name"
+severity = "warning"
+
+[[rule]]
+name = "init"
+severity = "warning"
+
+[[rule]]
+name = "exit-main"
+severity = "warning"
+
+[[rule]]
+name = "exit-once"
+severity = "warning"
+
+[[rule]]
+name = "struct-tag"
+severity = "warning"
+
+[[rule]]
+name = "goroutine-forget"
+severity = "warning"
+
+[[rule]]
+name = "goroutine-exit"
+severity = "warning"
+
+[[rule]]
+name = "goroutine-init"
+severity = "warning"
+
+[[rule]]
+name = "strconv"
+severity = "warning"
+
+[[rule]]
+name = "string-byte-slice"
+severity = "warning"
+
+[[rule]]
+name = "container-capacity"
+severity = "warning"
+
+[[rule]]
+name = "line-length"
+severity = "warning"
+
+[[rule]]
+name = "consistency"
+severity = "warning"
+
+[[rule]]
+name = "decl-group"
+severity = "warning"
+
+[[rule]]
+name = "import-group"
+severity = "warning"
+
+[[rule]]
+name = "package-name"
+severity = "warning"
+
+[[rule]]
+name = "function-name"
+severity = "warning"
+
+[[rule]]
+name = "import-alias"
+severity = "warning"
+
+[[rule]]
+name = "function-order"
+severity = "warning"
+
+[[rule]]
+name = "nest-less"
+severity = "warning"
+
+[[rule]]
+name = "else-unnecessary"
+severity = "warning"
+
+[[rule]]
+name = "global-decl"
+severity = "warning"
+
+[[rule]]
+name = "global-name"
+severity = "warning"
+
+[[rule]]
+name = "struct-embed"
+severity = "warning"
+
+[[rule]]
+name = "var-decl"
+severity = "warning"
+
+[[rule]]
+name = "slice-nil"
+severity = "warning"
+
+[[rule]]
+name = "var-scope"
+severity = "warning"
+
+[[rule]]
+name = "param-naked"
+severity = "warning"
+
+[[rule]]
+name = "string-escape"
+severity = "warning"
+
+[[rule]]
+name = "struct-field-key"
+severity = "warning"
+
+[[rule]]
+name = "struct-field-zero"
+severity = "warning"
+
+[[rule]]
+name = "struct-zero"
+severity = "warning"
+
+[[rule]]
+name = "struct-pointer"
+severity = "warning"
+
+[[rule]]
+name = "map-init"
+severity = "warning"
+
+[[rule]]
+name = "printf-const"
+severity = "warning"
+
+[[rule]]
+name = "printf-name"
+severity = "warning"
+
+[[rule]]
+name = "test-table"
+severity = "warning"
+
+[[rule]]
+name = "functional-option"
+severity = "warning"
+
+[[rule]]
+name = "lint"
+severity = "warning"
+
+[[rule]]
+name = "error-type"
+severity = "warning"
+
+[[rule]]
+name = "error-wrap"
+severity = "warning"
+
+[[rule]]
+name = "error-name"
+severity = "warning"
+
+[[rule]]
+name = "error-once"
+severity = "warning"
+
+[[rule]]
+name = "performance"
+severity = "warning"

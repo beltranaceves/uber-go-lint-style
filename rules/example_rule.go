@@ -1,8 +1,6 @@
 package rules
 
 import (
-	"fmt"
-
 	"github.com/mgechev/revive/lint"
 )
 
@@ -27,7 +25,7 @@ func (r *ExampleRule) Apply(file *lint.File, arguments lint.Arguments) []lint.Fa
 
 	// Example: Check for a simple pattern in the code
 	// This is a placeholder - replace with actual linting logic
-	
+
 	// Return all found failures
 	return failures
 }

@@ -1,15 +1,25 @@
-.PHONY: help lint lint-revive lint-check install-linters docs
+.PHONY: help lint lint-revive lint-check install-linters docs test
 
 help:
 	@echo "Uber Go Lint Style - Development Commands"
 	@echo ""
 	@echo "Available targets:"
+	@echo "  test              - Run all tests"
+	@echo "  test-rules        - Run rule tests (with verbose output)"
 	@echo "  lint              - Run all linters via golangci-lint"
 	@echo "  lint-revive       - Run only revive linter"
 	@echo "  lint-check        - Check if golangci-lint is installed"
 	@echo "  install-linters   - Install golangci-lint"
 	@echo "  docs              - Generate style guide documentation"
 	@echo "  help              - Show this help message"
+
+test:
+	@echo "Running tests..."
+	@go test ./...
+
+test-rules:
+	@echo "Running rule tests..."
+	@go test ./rules/... -v -run TestAllRules
 
 lint:
 	@echo "Running linters..."
