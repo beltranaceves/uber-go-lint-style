@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/beltranaceves/uber-go-lint-style/internal/llm"
 )
 
 func main() {
@@ -28,6 +31,31 @@ func main() {
 
 	rulesDir := "rules"
 	os.MkdirAll(rulesDir, 0755)
+
+	// Initialize LLM provider if enabled
+	llmCfg := llm.NewConfig()
+	var llmProvider llm.Provider
+	if llmCfg.Enabled {
+		var err error
+		llmProvider, err = llm.NewProvider(llmCfg)
+		if err != nil {
+			fmt.Printf("❌ LLM Error: %v\n", err)
+			fmt.Printf("\nTo enable LLM-enhanced rule generation, set:\n")
+			fmt.Printf("  export LLM_ENABLED=true\n")
+			fmt.Printf("  export LLM_PROVIDER=<openai|ollama|anthropic>\n")
+			fmt.Printf("  export LLM_API_KEY=<your-key>        # For OpenAI/Anthropic\n")
+			fmt.Printf("  export LLM_BASE_URL=<url>            # For Ollama (e.g., http://localhost:11434)\n")
+			fmt.Printf("  export LLM_MODEL=<model-name>\n\n")
+			llmCfg.Enabled = false
+		} else {
+			fmt.Printf("✅ LLM enabled: %s (model: %s)\n\n", llmCfg.Provider, llmCfg.Model)
+		}
+	} else {
+		fmt.Printf("ℹ️  LLM disabled. Set LLM_ENABLED=true to enhance rule generation.\n")
+		fmt.Printf("   Configuration: LLM_PROVIDER, LLM_API_KEY/LLM_BASE_URL, LLM_MODEL\n\n")
+	}
+
+	ctx := context.Background()
 
 	for _, ruleName := range rules {
 		// Convert rule-name to RuleName (e.g., interface-pointer -> InterfacePointer)
@@ -66,6 +94,15 @@ func (r *%[1]sRule) Apply(file *lint.File, args lint.Arguments) []lint.Failure {
 	return failures
 }
 `, ruleNameCamel, ruleName, ruleName, ruleName)
+
+		// Try to enhance with LLM if enabled
+		if llmCfg.Enabled && llmProvider != nil {
+			generatedCode, err := llmProvider.GenerateRuleCode(ctx, ruleName, "Refer to Uber Go Style Guide for context")
+			if err == nil && generatedCode != "" {
+				fmt.Printf("  (Enhanced with LLM)\n")
+				content = generatedCode
+			}
+		}
 
 		os.WriteFile(filename, []byte(content), 0644)
 		fmt.Printf("Created %s\n", ruleName)
