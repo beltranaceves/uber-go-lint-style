@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,13 +12,10 @@ import (
 	"github.com/mgechev/revive/lint"
 )
 
+var verboseMode = flag.Bool("verbose", false, "enable detailed rule test output")
+
 func isVerboseMode() bool {
-	for _, arg := range os.Args {
-		if arg == "--verbose" {
-			return true
-		}
-	}
-	return false
+	return verboseMode != nil && *verboseMode
 }
 
 // getTestdataDir returns the path to the testdata directory

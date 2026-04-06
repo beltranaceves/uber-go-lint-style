@@ -1,25 +1,20 @@
 package main_test
 
 import (
+	"flag"
 	"os"
 	"os/exec"
 	"testing"
 )
 
+var verboseMode = flag.Bool("verbose", false, "enable detailed full-suite output")
+
 // This file makes `go test` run the full test suite including rules
 
 func TestFullSuite(t *testing.T) {
-	verbose := false
-	for _, arg := range os.Args {
-		if arg == "--verbose" {
-			verbose = true
-			break
-		}
-	}
-
 	// Run all tests including the rules package
 	args := []string{"test", "./rules/...", "-run", "TestAllRules"}
-	if verbose {
+	if verboseMode != nil && *verboseMode {
 		args = append(args, "-v", "-args", "--verbose")
 	}
 
