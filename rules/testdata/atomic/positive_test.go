@@ -4,19 +4,21 @@
 
 package testdata
 
+import "sync/atomic"
+
 // Example 1
 type foo struct {
-  running int32  // atomic
+	running int32 // atomic
 }
 
-func (f* foo) start() {
-  if atomic.SwapInt32(&f.running, 1) == 1 {
-     // already running…
-     return
-  }
-  // start the Foo
+func (f *foo) start() {
+	if atomic.SwapInt32(&f.running, 1) == 1 {
+		// already running
+		return
+	}
+	// start the Foo
 }
 
 func (f *foo) isRunning() bool {
-  return f.running == 1  // race!
+	return f.running == 1 // race!
 }
