@@ -1,19 +1,24 @@
-// Auto-generated test case for atomic rule
+// Auto-generated test cases for rule
+// Positive = should FAIL lint (Bad code)
 // Negative = should PASS lint (Good code)
 
 package testdata
 
 import uberatomic "go.uber.org/atomic"
 
-// Example: Using go.uber.org/atomic (GOOD)
-type Counter struct {
-	value uberatomic.Int64
+// Example 1
+type foo struct {
+	running uberatomic.Bool
 }
 
-func (c *Counter) Increment() {
-	c.value.Add(1)
+func (f *foo) start() {
+	if f.running.Swap(true) {
+		// already running
+		return
+	}
+	// start the Foo
 }
 
-func (c *Counter) Get() int64 {
-	return c.value.Load()
+func (f *foo) isRunning() bool {
+	return f.running.Load()
 }

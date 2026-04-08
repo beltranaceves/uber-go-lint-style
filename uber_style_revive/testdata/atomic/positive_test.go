@@ -1,19 +1,24 @@
-// Auto-generated test case for atomic rule
+// Auto-generated test cases for rule
 // Positive = should FAIL lint (Bad code)
+// Negative = should PASS lint (Good code)
 
 package testdata
 
 import "sync/atomic"
 
-// Example: Using sync/atomic directly (BAD)
-type Counter struct {
-	value int64
+// Example 1
+type foo struct {
+	running int32 // atomic
 }
 
-func (c *Counter) Increment() {
-	atomic.AddInt64(&c.value, 1)
+func (f *foo) start() {
+	if atomic.SwapInt32(&f.running, 1) == 1 {
+		// already running
+		return
+	}
+	// start the Foo
 }
 
-func (c *Counter) Get() int64 {
-	return atomic.LoadInt64(&c.value)
+func (f *foo) isRunning() bool {
+	return f.running == 1 // race!
 }

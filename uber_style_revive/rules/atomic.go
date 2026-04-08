@@ -1,7 +1,6 @@
 package rules
 
 import (
-	"go/ast"
 	"strconv"
 
 	"github.com/mgechev/revive/lint"

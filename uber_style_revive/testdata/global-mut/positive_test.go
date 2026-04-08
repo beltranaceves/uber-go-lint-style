@@ -1,21 +1,28 @@
-// Auto-generated test case for global-mut rule
+// Auto-generated test cases for rule
 // Positive = should FAIL lint (Bad code)
+// Negative = should PASS lint (Good code)
 
 package testdata
 
-// Example: Mutable global variables (BAD)
-var (
-	Config map[string]string = make(map[string]string) // Exported mutable global
-	State  int                                           // Exported mutable global
-)
+// Example 1
+// sign.go
 
-// Another mutable global
-var Logger interface{} // Could be reassigned
+var _timeNow = time.Now
 
-func UpdateConfig(key, value string) {
-	Config[key] = value
+func sign(msg string) string {
+  now := _timeNow()
+  return signWithTime(msg, now)
 }
 
-func SetState(s int) {
-	State = s
+// Example 2
+// sign_test.go
+
+func TestSign(t *testing.T) {
+  oldTimeNow := _timeNow
+  _timeNow = func() time.Time {
+    return someFixedTime
+  }
+  defer func() { _timeNow = oldTimeNow }()
+
+  assert.Equal(t, want, sign(give))
 }
