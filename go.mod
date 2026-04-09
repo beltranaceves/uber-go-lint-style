@@ -1,11 +1,17 @@
-module github.com/beltranaceves/uber-go-lint-style
+module github.com/golangci/example-plugin-module-linter
 
-go 1.25.0
+go 1.23.0
 
 require (
-	github.com/hashicorp/go-version v1.8.0 // indirect
-	github.com/mgechev/revive v1.15.0 // indirect
-	github.com/tmc/go-llm v0.0.0-20240101000000-000000000000
-	golang.org/x/mod v0.33.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
+	github.com/golangci/plugin-module-register v0.1.1
+	github.com/stretchr/testify v1.10.0
+	golang.org/x/tools v0.31.0
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	golang.org/x/mod v0.24.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
