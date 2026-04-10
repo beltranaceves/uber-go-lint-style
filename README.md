@@ -1,81 +1,240 @@
 # uber-go-lint-style
 
-Set of custom rules for the Go revive linter following [Uber's Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md#linting).
+A golangci-lint plugin implementing custom Go linting rules based on [Uber's Go Style Guide](https://github.com/uber-go/guide).
 
-## Project Structure
+## Overview
+
+This is a custom golangci-lint plugin that enforces Uber's internal Go coding standards through static analysis. It's designed to catch style violations early and guide developers toward safer, more maintainable code patterns.
+
+## Features
+
+- **`todo` rule** — Detects TODO comments without an author attribution
+- **`atomic` rule** — Detects usage of `sync/atomic` on raw types; enforces `go.uber.org/atomic` for type safety
+- **Extensible** — Easy to add new rules following the patterns established
+
+## Installation
+
+### Prerequisites
+
+- Go 1.23+
+- golangci-lint 1.59.0+
+
+Install golangci-lint:
+```bash
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+```
+
+### Using the Plugin
+
+Since this is a custom plugin, golangci-lint requires you to build a custom binary that includes it.
+
+**Step 1: Create a `.custom-gcl.yml` in your project**
+
+```yaml
+version: v1.59.0
+
+plugins:
+  - module: 'github.com/beltranaceves/uber-go-lint-style'
+    version: v0.1.0  # Use latest release
+```
+
+Or for local development:
+```yaml
+plugins:
+  - module: 'github.com/beltranaceves/uber-go-lint-style'
+    path: /path/to/uber-go-lint-style
+```
+
+**Step 2: Create a `.golangci.yml` to enable the plugin and rules**
+
+```yaml
+version: "1"
+
+linters:
+  disable-all: true
+  enable:
+    - uber-go-lint-style
+
+linters-settings:
+  custom:
+    uber-go-lint-style:
+      type: "module"
+      description: "Uber Go style guide linter"
+      original-url: "github.com/beltranaceves/uber-go-lint-style"
+```
+
+**Step 3: Build the custom binary and run**
+
+```bash
+golangci-lint custom
+./custom-gcl run ./...
+```
+
+**For convenience, use a Makefile:**
+
+```makefile
+.DEFAULT_GOAL := lint
+
+lint:
+	@if [ ! -f "./custom-gcl" ]; then \
+		golangci-lint custom; \
+	fi
+	@./custom-gcl run
+
+clean:
+	@rm -f custom-gcl*
+
+.PHONY: lint clean
+```
+
+Then simply: `make`
+
+## Rules
+
+### `todo` — Require author in TODO comments
+
+**What it detects:**
+```go
+// TODO: fix this  // ❌ VIOLATION - no author
+// TODO(): fix this // ❌ VIOLATION - malformed
+
+// TODO(alice): fix this  // ✅ OK - has author
+```
+
+**Why:** Unattributed TODOs can be lost or unmaintained. Requiring an author ensures accountability and provides context for future developers.
+
+### `atomic` — Use go.uber.org/atomic for raw types
+
+**What it detects:**
+```go
+var counter int32
+atomic.StoreInt32(&counter, 1)  // ❌ VIOLATION - raw type
+
+val := atomic.LoadInt32(&counter)  // ❌ VIOLATION - returns raw type
+```
+
+**Correct usage:**
+```go
+counter := atomic.NewInt32(0)
+counter.Store(1)  // ✅ OK - type-safe wrapper
+val := counter.Load()
+```
+
+**Why:** The `sync/atomic` package operates on raw types, making it easy to forget atomic operations. `go.uber.org/atomic` provides type-safe wrappers that prevent accidental non-atomic access.
+
+**How the check works:**
+The rule inspects the function signature of `sync/atomic` calls and flags those that take or return raw types (int32, int64, uint32, uint64, uintptr). These should be replaced with equivalent operations from `go.uber.org/atomic`.
+
+## Testing Locally
+
+A test-client project is included to validate the plugin:
+
+```bash
+cd test-client
+make
+```
+
+This will:
+1. Build the custom golangci-lint binary with the plugin
+2. Run the linter against sample code with intentional violations
+
+See [test-client/README.md](test-client/README.md) for details.
+
+## Development
+
+### Project Structure
 
 ```
 uber-go-lint-style/
-├── rules/                    # Custom revive rule implementations
-│   ├── example_rule.go      # Template for implementing rules
-│   ├── README.md            # Guidelines for developing custom rules
-│   └── (custom rules)       # Additional rule implementations
-├── docs/                    # Documentation
-│   ├── DEVELOPMENT.md       # Custom rule development guide
-│   └── USAGE.md            # Revive usage and integration guide
-├── style_guide/            # Uber Go style guide rules documentation
-├── revive.toml             # Revive configuration file with standard and custom rules
-└── README.md               # This file
+├── plugin.go                # golangci-lint plugin entry point
+├── plugin_test.go           # Plugin tests
+├── rules/                   # Custom rule implementations
+│   ├── todo.go             # TODO rule
+│   └── atomic.go           # Atomic rule
+├── testdata/               # Test data for rules
+├── style_guide/            # Uber style guide documentation
+└── test-client/            # Client integration tests
 ```
 
-## Quick Start
+### Adding a New Rule
 
-### Installation
+1. Create a new file in `rules/` (e.g., `rules/myrule.go`):
 
-1. Install revive:
-   ```bash
-   go install github.com/mgechev/revive@latest
-   ```
+```go
+package rules
 
-2. Clone/navigate to this repository
+import (
+	"golang.org/x/tools/go/analysis"
+)
 
-### Running Linter
+type MyRule struct{}
+
+func (r *MyRule) BuildAnalyzer() *analysis.Analyzer {
+	return &analysis.Analyzer{
+		Name: "myrule",
+		Doc: "enforce your style convention",
+		Run: r.run,
+	}
+}
+
+func (r *MyRule) run(pass *analysis.Pass) (any, error) {
+	// Your linting logic here
+	return nil, nil
+}
+```
+
+2. Add test data in `testdata/src/testlintdata/myrule/`:
+
+```go
+package myrule_test
+
+// Violations here
+func bad() {
+	// want "error message"
+}
+
+// Good practices here  
+func good() {
+}
+```
+
+3. Add test in `plugin_test.go`:
+
+```go
+func TestMyRule(t *testing.T) {
+	// Similar to existing test patterns
+}
+```
+
+4. Register in `plugin.go`:
+
+```go
+func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
+	return []*analysis.Analyzer{
+		(&rules.TodoRule{}).BuildAnalyzer(),
+		(&rules.AtomicRule{}).BuildAnalyzer(),
+		(&rules.MyRule{}).BuildAnalyzer(),  // Add here
+	}, nil
+}
+```
+
+### Running Tests
 
 ```bash
-# Lint entire project
-revive ./...
-
-# Lint with this config
-revive -config revive.toml ./...
+go test ./...
 ```
 
-### Developing Custom Rules
+## Contributing
 
-1. Read [`rules/README.md`](rules/README.md) for implementation guidelines
-2. Use `rules/example_rule.go` as a template
-3. Reference [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for detailed development guide
-4. Add rule configuration to `revive.toml`
+This project implements style rules from [Uber's Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md). When adding new rules:
 
-## golangci-lint Plugin Interface
-
-Custom linters compatible with golangci-lint must implement the `register.LinterPlugin` interface:
-
-- **`BuildAnalyzers()`** — Returns `[]*analysis.Analyzer` defining the linter's analyzers and their execution function
-- **`GetLoadMode()`** — Declares load mode: `LoadModeSyntax` (AST-only) or `LoadModeTypesInfo` (full type information)
-
-Each analyzer reports issues via `pass.Report(analysis.Diagnostic)` with:
-- **`Pos`** — Exact token position (line/column) where the issue occurs
-- **`Message`** — Description of the issue
-- **`Category`** — Linter name for grouping
-
-The linter must be registered via `register.Plugin("name", New)` and follow the standard `golang.org/x/tools/go/analysis` framework. See [example.go](example.go) for a complete implementation.
-
-## Configuration
-
-The `revive.toml` file contains:
-- All standard revive rules
-- Placeholders for custom Uber-style rules
-- Global linter settings
-
-See [`docs/USAGE.md`](docs/USAGE.md) for configuration details.
-
-## Documentation
-
-- **[rules/README.md](rules/README.md)**: Rule development structure and guidelines
-- **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**: In-depth custom rule development guide
-- **[docs/USAGE.md](docs/USAGE.md)**: Revive usage, integration, and troubleshooting
+1. Reference the specific style guideline being enforced
+2. Document how the check works in the rule's `Doc` field
+3. Provide comprehensive test cases (both good and bad patterns)
+4. Keep rules focused and single-purpose
 
 ## Resources
 
-- [Revive Linter](https://github.com/mgechev/revive)
-- [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md)
+- [uber-go/guide](https://github.com/uber-go/guide) — Uber's Go style guide
+- [golangci-lint plugins](https://golangci-lint.run/docs/plugins/plugins-configuration/) — Custom plugin documentation
+- [golang.org/x/tools/go/analysis](https://pkg.go.dev/golang.org/x/tools/go/analysis) — Analysis framework used
