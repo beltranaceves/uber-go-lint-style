@@ -1,0 +1,13 @@
+version: "2"
+
+linters:
+  disable-all: true
+  enable:
+    - uber-go-lint-style
+
+linters-settings:
+  custom:
+    uber-go-lint-style:
+      type: "module"
+      description: "Uber Go style guide linter with custom rules (todo, atomic)"
+      original-url: "github.com/beltranaceves/uber-go-lint-style"
