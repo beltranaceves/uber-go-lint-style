@@ -3,6 +3,7 @@ package rules
 import (
 	"go/ast"
 	"go/token"
+	"go/types"
 
 	"golang.org/x/tools/go/analysis"
 )
@@ -10,57 +11,15 @@ import (
 // BuiltinNameRule checks that built-in names are not shadowed or used as identifiers.
 type BuiltinNameRule struct{}
 
-// builtinNames contains all predeclared identifiers that should not be shadowed
-var builtinNames = map[string]bool{
-	// Types
-	"any":        true,
-	"bool":       true,
-	"byte":       true,
-	"comparable": true,
-	"complex64":  true,
-	"complex128": true,
-	"error":      true,
-	"float32":    true,
-	"float64":    true,
-	"int":        true,
-	"int8":       true,
-	"int16":      true,
-	"int32":      true,
-	"int64":      true,
-	"rune":       true,
-	"string":     true,
-	"uint":       true,
-	"uint8":      true,
-	"uint16":     true,
-	"uint32":     true,
-	"uint64":     true,
-	"uintptr":    true,
-	// Constants
-	"true":  true,
-	"false": true,
-	"iota":  true,
-	// Zero value
-	"nil": true,
-	// Functions
-	"append":  true,
-	"cap":     true,
-	"clear":   true,
-	"close":   true,
-	"complex": true,
-	"copy":    true,
-	"delete":  true,
-	"imag":    true,
-	"len":     true,
-	"make":    true,
-	"max":     true,
-	"min":     true,
-	"new":     true,
-	"panic":   true,
-	"print":   true,
-	"println": true,
-	"real":    true,
-	"recover": true,
-}
+// builtinNames contains all predeclared identifiers that should not be shadowed.
+// Computed from types.Universe to be automatically compatible with new Go versions.
+var builtinNames = func() map[string]bool {
+	names := make(map[string]bool)
+	for _, name := range types.Universe.Names() {
+		names[name] = true
+	}
+	return names
+}()
 
 // BuildAnalyzer returns the analyzer for the builtin-name rule
 func (r *BuiltinNameRule) BuildAnalyzer() *analysis.Analyzer {
