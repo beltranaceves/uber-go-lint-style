@@ -41,6 +41,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 	return []*analysis.Analyzer{
 		(&rules.TodoRule{}).BuildAnalyzer(),
 		(&rules.AtomicRule{}).BuildAnalyzer(),
+		(&rules.BuiltinNameRule{}).BuildAnalyzer(),
 	}, nil
 }
 

@@ -36,6 +36,19 @@ func TestAtomicRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[1], "testlintdata/atomic")
 }
 
+func TestBuiltinNameRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), analyzers[2], "testlintdata/builtin_name")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
