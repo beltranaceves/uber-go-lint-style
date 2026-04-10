@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 const customGclConfig = `version: v1.59.0
@@ -96,25 +97,68 @@ func checkGolangciLint() error {
 }
 
 func createConfigFiles() error {
-	files := map[string]string{
+	// Create YAML config files (skip if they exist)
+	yamlFiles := map[string]string{
 		".custom-gcl.yml": customGclConfig,
 		".golangci.yml":   golangciConfig,
-		"Makefile":        makefile,
 	}
 
-	for filename, content := range files {
-		// Check if file exists
+	for filename, content := range yamlFiles {
 		if _, err := os.Stat(filename); err == nil {
 			fmt.Printf("  ℹ️  %s already exists (skipping)\n", filename)
 			continue
 		}
 
-		// Write file
 		if err := os.WriteFile(filename, []byte(content), 0644); err != nil {
 			return fmt.Errorf("failed to create %s: %w", filename, err)
 		}
 		fmt.Printf("  ✓ Created %s\n", filename)
 	}
+
+	// Handle Makefile specially - merge if it exists
+	if err := createOrMergeMakefile(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createOrMergeMakefile() error {
+	const makefileName = "Makefile"
+
+	// Check if Makefile exists
+	content, err := os.ReadFile(makefileName)
+	if err != nil {
+		// File doesn't exist, create it
+		if err := os.WriteFile(makefileName, []byte(makefile), 0644); err != nil {
+			return fmt.Errorf("failed to create %s: %w", makefileName, err)
+		}
+		fmt.Printf("  ✓ Created %s\n", makefileName)
+		return nil
+	}
+
+	// File exists - check if our lint target is already there
+	existingContent := string(content)
+	if strings.Contains(existingContent, "lint:") {
+		fmt.Printf("  ℹ️  %s already exists with 'lint' target (skipping)\n", makefileName)
+		return nil
+	}
+
+	// Makefile exists but doesn't have our lint target - try to merge
+	fmt.Printf("  ℹ️  %s already exists, merging targets...\n", makefileName)
+
+	// Append our targets with a separator
+	separator := "\n# uber-go-lint-style plugin targets\n"
+	mergedContent := existingContent
+	if !strings.HasSuffix(mergedContent, "\n") {
+		mergedContent += "\n"
+	}
+	mergedContent += separator + makefile
+
+	if err := os.WriteFile(makefileName, []byte(mergedContent), 0644); err != nil {
+		return fmt.Errorf("failed to merge %s: %w", makefileName, err)
+	}
+	fmt.Printf("  ✓ Merged lint targets into %s\n", makefileName)
 
 	return nil
 }
