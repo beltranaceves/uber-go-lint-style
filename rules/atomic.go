@@ -7,19 +7,28 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-// AtomicRule checks for usage of sync/atomic operations on raw types
+// AtomicRule checks for usage of sync/atomic operations on raw types.
 type AtomicRule struct{}
 
 // BuildAnalyzer returns the analyzer for the atomic rule
 func (r *AtomicRule) BuildAnalyzer() *analysis.Analyzer {
 	return &analysis.Analyzer{
 		Name: "atomic",
-		Doc:  "require use of go.uber.org/atomic instead of sync/atomic for operations on raw types",
-		Run:  r.run,
+		Doc: `require use of go.uber.org/atomic instead of sync/atomic for operations on raw types.
+
+			Detects calls to sync/atomic functions that take or return raw types (int32, int64, uint32, uint64, uintptr).
+			Raw types lack type safety and are error-prone compared to go.uber.org/atomic's wrapped types.`,
+		Run: r.run,
 	}
 }
 
-// isRawType checks if a type is a raw integer/pointer type
+// isRawType checks if a type is a raw integer/pointer type that requires go.uber.org/atomic.
+// Raw types are: int32, int64, uint32, uint64, uintptr
+//
+// TODO: Consider improving this by dynamically checking if a type has corresponding
+// functions in sync/atomic or go.uber.org/atomic packages, rather than maintaining
+// a hardcoded list of raw types. This would make the check more maintainable and
+// forward-compatible with potential future atomic types.
 func isRawType(t types.Type) bool {
 	if t == nil {
 		return false
@@ -44,7 +53,8 @@ func isRawType(t types.Type) bool {
 	return false
 }
 
-// functionInvolvesRawType checks if a function signature involves raw types
+// functionInvolvesRawType checks if a function signature involves raw types.
+// Returns true if any parameter or return value is a raw type.
 func functionInvolvesRawType(fn *types.Func) bool {
 	if fn == nil {
 		return false
