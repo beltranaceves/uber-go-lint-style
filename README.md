@@ -24,11 +24,34 @@ Install golangci-lint:
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 ```
 
-### Using the Plugin
+### Setup Option 1: Automated Setup (Recommended)
 
-Since this is a custom plugin, golangci-lint requires you to build a custom binary that includes it.
+Run the setup script to auto-generate configuration files:
 
-**Step 1: Create a `.custom-gcl.yml` in your project**
+```bash
+go run github.com/beltranaceves/uber-go-lint-style/cmd/setup@latest
+```
+
+**Note:** This requires a released version. If you want to test locally first, clone the repo and run:
+```bash
+go run ./cmd/setup
+```
+
+This creates:
+- `.custom-gcl.yml` — Plugin configuration
+- `.golangci.yml` — Linter settings
+- `Makefile` — Build and run commands
+
+Then simply:
+```bash
+make
+```
+
+### Setup Option 2: Manual Configuration
+
+If you prefer manual setup, follow these steps:
+
+**Step 1: Create `.custom-gcl.yml`**
 
 ```yaml
 version: v1.59.0
@@ -70,24 +93,14 @@ golangci-lint custom
 ./custom-gcl run ./...
 ```
 
-**For convenience, use a Makefile:**
-
-```makefile
-.DEFAULT_GOAL := lint
-
-lint:
-	@if [ ! -f "./custom-gcl" ]; then \
-		golangci-lint custom; \
-	fi
-	@./custom-gcl run
-
-clean:
-	@rm -f custom-gcl*
-
-.PHONY: lint clean
+Or if you created a Makefile (via the setup script):
+```bash
+make
 ```
 
-Then simply: `make`
+---
+
+**💡 Tip:** Use the automated setup from Option 1 — it generates all these files for you automatically!
 
 ## Rules
 
