@@ -40,6 +40,7 @@ func New(settings any) (register.LinterPlugin, error) {
 func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 	return []*analysis.Analyzer{
 		(&rules.TodoRule{}).BuildAnalyzer(),
+		(&rules.AtomicRule{}).BuildAnalyzer(),
 	}, nil
 }
 
@@ -48,5 +49,5 @@ func (f *PluginExample) GetLoadMode() string {
 	// - `register.LoadModeSyntax`: if the linter doesn't use types information.
 	// - `register.LoadModeTypesInfo`: if the linter uses types information.
 
-	return register.LoadModeSyntax
+	return register.LoadModeTypesInfo
 }
