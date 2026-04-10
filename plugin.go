@@ -1,15 +1,14 @@
 package linters
 
 import (
-	"go/ast"
-	"strings"
-
 	"github.com/golangci/plugin-module-register/register"
 	"golang.org/x/tools/go/analysis"
+
+	"github.com/beltranaceves/uber-go-lint-style/rules"
 )
 
 func init() {
-	register.Plugin("example", New)
+	register.Plugin("uber-go-lint-style", New)
 }
 
 type MySettings struct {
@@ -40,11 +39,7 @@ func New(settings any) (register.LinterPlugin, error) {
 
 func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 	return []*analysis.Analyzer{
-		{
-			Name: "todo",
-			Doc:  "find todos without an author",
-			Run:  f.run,
-		},
+		(&rules.TodoRule{}).BuildAnalyzer(),
 	}, nil
 }
 
@@ -54,26 +49,4 @@ func (f *PluginExample) GetLoadMode() string {
 	// - `register.LoadModeTypesInfo`: if the linter uses types information.
 
 	return register.LoadModeSyntax
-}
-
-func (f *PluginExample) run(pass *analysis.Pass) (any, error) {
-	for _, file := range pass.Files {
-		ast.Inspect(file, func(n ast.Node) bool {
-			if comment, ok := n.(*ast.Comment); ok {
-				if strings.HasPrefix(comment.Text, "// TODO:") || strings.HasPrefix(comment.Text, "// TODO():") {
-					pass.Report(analysis.Diagnostic{
-						Pos:            comment.Pos(),
-						End:            0,
-						Category:       "todo",
-						Message:        "TODO comment has no author",
-						SuggestedFixes: nil,
-					})
-				}
-			}
-
-			return true
-		})
-	}
-
-	return nil, nil
 }

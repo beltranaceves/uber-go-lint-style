@@ -1,4 +1,4 @@
-module github.com/golangci/example-plugin-module-linter
+module github.com/beltranaceves/uber-go-lint-style
 
 go 1.23.0
 

@@ -10,8 +10,8 @@ import (
 	"golang.org/x/tools/go/analysis/analysistest"
 )
 
-func TestPluginExample(t *testing.T) {
-	newPlugin, err := register.GetPlugin("example")
+func TestUberGoLintStyle(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
 	require.NoError(t, err)
 
 	plugin, err := newPlugin(nil)

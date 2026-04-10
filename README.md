@@ -46,6 +46,20 @@ revive -config revive.toml ./...
 3. Reference [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for detailed development guide
 4. Add rule configuration to `revive.toml`
 
+## golangci-lint Plugin Interface
+
+Custom linters compatible with golangci-lint must implement the `register.LinterPlugin` interface:
+
+- **`BuildAnalyzers()`** — Returns `[]*analysis.Analyzer` defining the linter's analyzers and their execution function
+- **`GetLoadMode()`** — Declares load mode: `LoadModeSyntax` (AST-only) or `LoadModeTypesInfo` (full type information)
+
+Each analyzer reports issues via `pass.Report(analysis.Diagnostic)` with:
+- **`Pos`** — Exact token position (line/column) where the issue occurs
+- **`Message`** — Description of the issue
+- **`Category`** — Linter name for grouping
+
+The linter must be registered via `register.Plugin("name", New)` and follow the standard `golang.org/x/tools/go/analysis` framework. See [example.go](example.go) for a complete implementation.
+
 ## Configuration
 
 The `revive.toml` file contains:
