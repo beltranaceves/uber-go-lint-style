@@ -29,7 +29,12 @@ func (r *BuiltinNameRule) BuildAnalyzer() *analysis.Analyzer {
 
 			Go has several predeclared identifiers (types, constants, functions).
 			Reusing these names as variable or field names can shadow the original within
-			the current lexical scope and make code confusing or hard to grep.`,
+			the current lexical scope and make code confusing or hard to grep.
+			
+			This rule dynamically retrieves the list of predeclared identifiers from
+			go/types.Universe, ensuring compatibility with all Go versions. It checks
+			variable declarations, function parameters, receiver parameters, and struct
+			fields for any shadowing of these built-in names.`,
 		Run: r.run,
 	}
 }
