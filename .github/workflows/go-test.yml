@@ -23,6 +23,13 @@ jobs:
         run: |
           go test -covermode=atomic -coverprofile=coverage.out || true
           if [ -f coverage.out ]; then go tool cover -func=coverage.out | tee coverage.txt; fi
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.out
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unittests
+          fail_ci_if_error: false
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
