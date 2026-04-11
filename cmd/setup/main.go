@@ -65,7 +65,7 @@ clean:
 `
 
 func main() {
-	fmt.Println("Setting up uber-go-lint-style plugin...\n")
+	fmt.Println("Setting up uber-go-lint-style plugin...")
 
 	// Check if golangci-lint is installed
 	if err := checkGolangciLint(); err != nil {
@@ -80,7 +80,7 @@ func main() {
 	}
 
 	// Print success
-	fmt.Println("✅ Setup complete!\n")
+	fmt.Println("✅ Setup complete!")
 	fmt.Println("Next steps:")
 	fmt.Println("  1. Run: make")
 	fmt.Println("     (First time takes ~1-2 minutes to build plugin)")
