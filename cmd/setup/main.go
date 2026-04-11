@@ -11,7 +11,7 @@ const customGclConfig = `version: v1.59.0
 
 plugins:
   - module: 'github.com/beltranaceves/uber-go-lint-style'
-    version: v0.1.0
+    version: v0.1.1
 `
 
 const golangciConfig = `version: "1"
@@ -27,6 +27,13 @@ linters-settings:
       type: "module"
       description: "Uber Go style guide linter"
       original-url: "github.com/beltranaceves/uber-go-lint-style"
+
+severity:
+  default-severity: error
+  rules:
+    - linters:
+        - uber-go-lint-style
+      severity: warning
 `
 
 const makefile = `.DEFAULT_GOAL := lint

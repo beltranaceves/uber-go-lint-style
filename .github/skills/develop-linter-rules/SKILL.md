@@ -414,6 +414,75 @@ pass.Report(analysis.Diagnostic{
 })
 ```
 
+### 5. Diagnostic Severity: All Diagnostics Are Errors
+
+**Important:** The `analysis.Diagnostic` struct has no severity level. All diagnostics reported via `pass.Report()` are treated as errors by golangci-lint — there is no native way to distinguish "warnings" from "errors."
+
+**What this means:**
+- Every `pass.Report()` call creates a lint violation that must be fixed or suppressed
+- You cannot create optional "suggestions" or "warnings" through severity levels
+- The framework treats all diagnostics equally
+
+**If your rule feels more advisory than mandatory:**
+
+1. **Document the rule's intent clearly** — Explain in the `Doc` field that this is a stylistic suggestion
+2. **Document the `nolint` directive** — Tell users they can suppress it where it doesn't apply
+3. **Use clear messaging** — Phrase diagnostics as suggestions ("consider using X instead of Y")
+
+**Example:**
+
+```go
+func (r *MyNewRule) BuildAnalyzer() *analysis.Analyzer {
+	return &analysis.Analyzer{
+		Name: "mynewrule",
+		Doc: `suggest using pattern X instead of pattern Y.
+
+			This rule detects pattern Y and recommends X as a better alternative
+			for clarity and consistency. If you need to use pattern Y, you can
+			suppress this rule with the //nolint:mynewrule directive.`,
+		Run: r.run,
+	}
+}
+```
+
+### 6. Suppressing Rules with //nolint Directives
+
+Users can suppress your rule using the standard Go `//nolint` comment, which golangci-lint recognizes:
+
+**Suppress all linters on the next line:**
+
+```go
+//nolint
+func FunctionThatTriggersMyRule() {
+}
+```
+
+**Suppress a specific rule by name:**
+
+```go
+//nolint:mynewrule
+func FunctionThatTriggersMyRule() {
+}
+```
+
+**Suppress multiple specific rules:**
+
+```go
+//nolint:mynewrule,atomic
+func FunctionThatMightTriggerMultipleRules() {
+}
+```
+
+**Suppress inline (for inline violations):**
+
+```go
+func BadExample(error string) {  //nolint:mynewrule
+	// ...
+}
+```
+
+**Best practice:** Document this in your rule's `Doc` field so users know they have an escape hatch for edge cases where your rule's recommendation doesn't apply.
+
 ## Testing Conventions
 
 ### Test File Organization
