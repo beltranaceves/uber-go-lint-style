@@ -7,3 +7,5 @@
 /golangci-lint.exe
 /example.so
 cpu.out
+coverage.html
+coverage.txt
