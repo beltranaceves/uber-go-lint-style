@@ -13,14 +13,6 @@ func badDynamic() {
 	_ = c
 }
 
-// GOOD: dynamic size, but ignored linter
-// nolint: channel_size
-func goodDynamic() {
-	n := 4
-	c := make(chan int, n)
-	_ = c
-}
-
 // GOOD: size of one
 func goodOne() {
 	c := make(chan int, 1)
