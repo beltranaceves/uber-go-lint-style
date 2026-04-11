@@ -15,12 +15,6 @@ A golangci-lint plugin implementing custom Go linting rules based on [Uber's Go 
 
 This is a custom golangci-lint plugin that enforces Uber's internal Go coding standards through static analysis. It's designed to catch style violations early and guide developers toward safer, more maintainable code patterns.
 
-## Features
-
-- **`todo` rule** — Detects TODO comments without an author attribution
-- **`atomic` rule** — Detects usage of `sync/atomic` on raw types; enforces `go.uber.org/atomic` for type safety
-- **Extensible** — Easy to add new rules following the patterns established
-
 ## Installation
 
 ### Prerequisites
@@ -111,39 +105,7 @@ make
 
 ## Rules
 
-### `todo` — Require author in TODO comments
-
-**What it detects:**
-```go
-// TODO: fix this  // ❌ VIOLATION - no author
-// TODO(): fix this // ❌ VIOLATION - malformed
-
-// TODO(alice): fix this  // ✅ OK - has author
-```
-
-**Why:** Unattributed TODOs can be lost or unmaintained. Requiring an author ensures accountability and provides context for future developers.
-
-### `atomic` — Use go.uber.org/atomic for raw types
-
-**What it detects:**
-```go
-var counter int32
-atomic.StoreInt32(&counter, 1)  // ❌ VIOLATION - raw type
-
-val := atomic.LoadInt32(&counter)  // ❌ VIOLATION - returns raw type
-```
-
-**Correct usage:**
-```go
-counter := atomic.NewInt32(0)
-counter.Store(1)  // ✅ OK - type-safe wrapper
-val := counter.Load()
-```
-
-**Why:** The `sync/atomic` package operates on raw types, making it easy to forget atomic operations. `go.uber.org/atomic` provides type-safe wrappers that prevent accidental non-atomic access.
-
-**How the check works:**
-The rule inspects the function signature of `sync/atomic` calls and flags those that take or return raw types (int32, int64, uint32, uint64, uintptr). These should be replaced with equivalent operations from `go.uber.org/atomic`.
+See [RULES.md](RULES.md) for full rule descriptions and examples.
 
 ## Development
 
@@ -226,7 +188,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 ### Running Tests
 
 ```bash
-go test
+go test ./...
 ```
 
 ## Contributing
