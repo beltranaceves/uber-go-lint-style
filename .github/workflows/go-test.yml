@@ -18,10 +18,10 @@ jobs:
       - name: Install dependencies
         run: go mod download
       - name: Run tests
-        run: go test
+        run: go test ./...
       - name: Generate coverage
         run: |
-          go test -covermode=atomic -coverprofile=coverage.txt || true
+          go test -covermode=atomic -coverprofile=coverage.txt ./... || true
           if [ -f coverage.txt ]; then go tool cover -func=coverage.txt | tee coverage.func.txt; fi
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
