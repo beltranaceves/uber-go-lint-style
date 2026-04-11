@@ -21,12 +21,12 @@ jobs:
         run: go test
       - name: Generate coverage
         run: |
-          go test -covermode=atomic -coverprofile=coverage.out || true
-          if [ -f coverage.out ]; then go tool cover -func=coverage.out | tee coverage.txt; fi
+          go test -covermode=atomic -coverprofile=coverage.txt || true
+          if [ -f coverage.txt ]; then go tool cover -func=coverage.txt | tee coverage.func.txt; fi
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: coverage.out
+          files: coverage.txt
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
           fail_ci_if_error: false
@@ -35,5 +35,5 @@ jobs:
         with:
           name: coverage-report
           path: |
-            coverage.out
             coverage.txt
+            coverage.func.txt
