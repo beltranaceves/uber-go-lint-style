@@ -43,6 +43,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.AtomicRule{}).BuildAnalyzer(),
 		(&rules.BuiltinNameRule{}).BuildAnalyzer(),
 		(&rules.ChannelSizeRule{}).BuildAnalyzer(),
+		(&rules.ContainerCapacityRule{}).BuildAnalyzer(),
 	}, nil
 }
 

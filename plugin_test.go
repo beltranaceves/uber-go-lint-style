@@ -62,6 +62,19 @@ func TestChannelSizeRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[3], "testlintdata/channel_size")
 }
 
+func TestContainerCapacityRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), analyzers[4], "testlintdata/container_capacity")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
