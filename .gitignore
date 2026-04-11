@@ -10,3 +10,4 @@ cpu.out
 coverage.html
 coverage.txt
 .vscode/
+uber-go-lint-style.test
