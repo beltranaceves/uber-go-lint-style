@@ -100,8 +100,6 @@ make
 
 ---
 
-**💡 Tip:** Use the automated setup from Option 1 — it generates all these files for you automatically!
-
 ## Rules
 
 ### `todo` — Require author in TODO comments
@@ -137,21 +135,6 @@ val := counter.Load()
 
 **How the check works:**
 The rule inspects the function signature of `sync/atomic` calls and flags those that take or return raw types (int32, int64, uint32, uint64, uintptr). These should be replaced with equivalent operations from `go.uber.org/atomic`.
-
-## Testing Locally
-
-A test-client project is included to validate the plugin:
-
-```bash
-cd test-client
-make
-```
-
-This will:
-1. Build the custom golangci-lint binary with the plugin
-2. Run the linter against sample code with intentional violations
-
-See [test-client/README.md](test-client/README.md) for details.
 
 ## Development
 
@@ -234,7 +217,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 ### Running Tests
 
 ```bash
-go test ./...
+go test
 ```
 
 ## Contributing
@@ -250,4 +233,6 @@ This project implements style rules from [Uber's Go Style Guide](https://github.
 
 - [uber-go/guide](https://github.com/uber-go/guide) — Uber's Go style guide
 - [golangci-lint plugins](https://golangci-lint.run/docs/plugins/plugins-configuration/) — Custom plugin documentation
-- [golang.org/x/tools/go/analysis](https://pkg.go.dev/golang.org/x/tools/go/analysis) — Analysis framework used
+- [go/analysis](https://pkg.go.dev/golang.org/x/tools/go/analysis) — Analysis framework used
+- [go/ast](https://pkg.go.dev/go/ast)
+- [go/types](https://pkg.go.dev/go/types)
