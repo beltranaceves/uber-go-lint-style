@@ -36,10 +36,10 @@ severity:
       severity: warning
 `
 
-const makefile = `.DEFAULT_GOAL := lint
+const makefile = `.DEFAULT_GOAL := uber_lint
 
 # Run linter (builds plugin if needed)
-lint:
+uber_lint:
 	@if [ ! -f "./custom-gcl" ]; then \
 		echo "Building custom golangci-lint with uber-go-lint-style plugin..."; \
 		golangci-lint custom || exit 1; \
@@ -47,19 +47,19 @@ lint:
 	@./custom-gcl run
 
 # View help
-help:
+uber_help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"
-	@echo "  make             Build plugin (if needed) and run linter"
-	@echo "  make clean       Remove cached plugin binary"
+	@echo "  make uber_lint       Build plugin (if needed) and run linter"
+	@echo "  make uber_clean      Remove cached plugin binary"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make             # First run builds plugin, subsequent runs are fast"
-	@echo "  make clean       # Reset and rebuild plugin next time"
+	@echo "  make uber_lint       # First run builds plugin, subsequent runs are fast"
+	@echo "  make uber_clean      # Reset and rebuild plugin next time"
 
-.PHONY: clean
-clean:
+.PHONY: uber_lint uber_help uber_clean
+uber_clean:
 	@rm -f custom-gcl*
 	@echo "Cleaned custom linter artifacts"
 `

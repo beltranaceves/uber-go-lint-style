@@ -47,7 +47,7 @@ This creates:
 
 Then simply:
 ```bash
-make
+make uber_lint
 ```
 
 ### Setup Option 2: Manual Configuration
@@ -61,7 +61,7 @@ version: v1.59.0
 
 plugins:
   - module: 'github.com/beltranaceves/uber-go-lint-style'
-    version: v0.1.0  # Use latest release
+    version: v0.1.1  # Use latest release
 ```
 
 Or for local development:
@@ -87,6 +87,13 @@ linters-settings:
       type: "module"
       description: "Uber Go style guide linter"
       original-url: "github.com/beltranaceves/uber-go-lint-style"
+
+severity:
+  default-severity: error
+  rules:
+    - linters:
+        - uber-go-lint-style
+      severity: warning
 ```
 
 **Step 3: Build the custom binary and run**
@@ -96,24 +103,45 @@ golangci-lint custom
 ./custom-gcl run ./...
 ```
 
-**Adding a Makefile target (optional)**
+**Step 4: Add a Makefile (optional)**
 
-To avoid running commands manually each time, add this target to your `Makefile`:
+To avoid running commands manually each time, add these targets to your `Makefile`:
 
 ```makefile
-.PHONY: uber_lint
+.DEFAULT_GOAL := uber_lint
+
+# Run linter (builds plugin if needed)
 uber_lint:
 	@if [ ! -f "./custom-gcl" ]; then \
 		echo "Building custom golangci-lint with uber-go-lint-style plugin..."; \
 		golangci-lint custom || exit 1; \
 	fi
-	@./custom-gcl run ./...
+	@./custom-gcl run
+
+# View help
+uber_help:
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@echo "  make uber_lint       Build plugin (if needed) and run linter"
+	@echo "  make uber_clean      Remove cached plugin binary"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make uber_lint       # First run builds plugin, subsequent runs are fast"
+	@echo "  make uber_clean      # Reset and rebuild plugin next time"
+
+.PHONY: uber_lint uber_help uber_clean
+uber_clean:
+	@rm -f custom-gcl*
+	@echo "Cleaned custom linter artifacts"
 ```
 
-This target automatically builds the binary on first run and caches it for subsequent runs. Then simply:
+This automatically builds the binary on first run and caches it for subsequent runs. Then simply:
 ```bash
 make uber_lint
 ```
+
+Optional targets: `make uber_help` for usage, `make uber_clean` to reset.
 
 ---
 
@@ -220,6 +248,7 @@ This project implements style rules from [Uber's Go Style Guide](https://github.
 
 - [uber-go/guide](https://github.com/uber-go/guide) — Uber's Go style guide
 - [golangci-lint plugins](https://golangci-lint.run/docs/plugins/plugins-configuration/) — Custom plugin documentation
-- [go/analysis](https://pkg.go.dev/golang.org/x/tools/go/analysis) — Analysis framework used
-- [go/ast](https://pkg.go.dev/go/ast)
-- [go/types](https://pkg.go.dev/go/types)
+- Analysis tools:
+  - [go/analysis](https://pkg.go.dev/golang.org/x/tools/go/analysis)
+  - [go/ast](https://pkg.go.dev/go/ast)
+  - [go/types](https://pkg.go.dev/go/types)
