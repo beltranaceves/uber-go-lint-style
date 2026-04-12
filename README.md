@@ -24,7 +24,7 @@ This is a custom linter that strives to enforce Uber's internal Go coding standa
 
 
 > [!TIP]
-> If you are using any coding Agent (Claude Code, AmpCode, Cursor, Copilot, etc.), copy and paste this prompt:
+> If you are using a coding Agent (Claude Code, AmpCode, Cursor, Copilot, etc.), copy and paste this prompt:
 > ```bash
 > Fetch the install guide and follow it:
 > curl -s https://raw.githubusercontent.com/beltranaceves/uber-go-lint-style/refs/heads/main/installation.md
@@ -68,13 +68,6 @@ version: v1.59.0
 plugins:
   - module: 'github.com/beltranaceves/uber-go-lint-style'
     version: v0.1.1  # Use latest release
-```
-
-Or for local development:
-```yaml
-plugins:
-  - module: 'github.com/beltranaceves/uber-go-lint-style'
-    path: /path/to/uber-go-lint-style
 ```
 
 **Step 2: Create a `.golangci.yml` to enable the plugin and rules**
