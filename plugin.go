@@ -45,6 +45,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.ChannelSizeRule{}).BuildAnalyzer(),
 		(&rules.ContainerCapacityRule{}).BuildAnalyzer(),
 		(&rules.ContainerCopyRule{}).BuildAnalyzer(),
+		(&rules.DeclGroupRule{}).BuildAnalyzer(),
 	}, nil
 }
 
