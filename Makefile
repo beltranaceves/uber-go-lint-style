@@ -29,7 +29,7 @@ profile:
 # Run tests with coverage
 coverage:
 	@echo "Running tests with coverage..."
-	@go test -covermode=atomic -coverpkg=./... -coverprofile=$(COVERAGE_OUT) $(ARGS) || true
+	@go test -covermode=atomic -coverpkg=./... -coverprofile=$(COVERAGE_OUT) $(ARGS) ./... || true
 	@if [ -f $(COVERAGE_OUT) ]; then \
 		echo ""; \
 		echo "Function-level coverage:"; \
