@@ -203,7 +203,7 @@ package myrule_test
 
 // Violations here
 func bad() {
-	// want "error message"
+	undesirable code // want "error message"
 }
 
 // Good practices here  
