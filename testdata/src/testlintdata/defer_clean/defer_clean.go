@@ -1,5 +1,4 @@
 package defer_clean
-package defer_clean
 
 import (
     "os"
