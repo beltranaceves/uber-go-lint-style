@@ -96,9 +96,23 @@ golangci-lint custom
 ./custom-gcl run ./...
 ```
 
-Or if you created a Makefile (via the setup script):
+**Adding a Makefile target (optional)**
+
+To avoid running commands manually each time, add this target to your `Makefile`:
+
+```makefile
+.PHONY: uber_lint
+uber_lint:
+	@if [ ! -f "./custom-gcl" ]; then \
+		echo "Building custom golangci-lint with uber-go-lint-style plugin..."; \
+		golangci-lint custom || exit 1; \
+	fi
+	@./custom-gcl run ./...
+```
+
+This target automatically builds the binary on first run and caches it for subsequent runs. Then simply:
 ```bash
-make
+make uber_lint
 ```
 
 ---
