@@ -37,6 +37,7 @@ Before implementing a rule, you need to decide which analysis packages and techn
 |----------|----------|----------|-------|------------|
 | **AST-only** | `go/ast` | Structural checks: naming, comments, syntax | ⚡ Fast | Low |
 | **Type-aware** | `go/ast` + `go/types` | Semantic checks: types, functions, packages | 🐢 Slower | Medium |
+| **SSA-based** | `golang.org/x/tools/go/ssa` | IR-level analysis: dataflow, control-flow, whole-function bodies and advanced semantics | 🐢 Slower | High |
 | **Full Analysis Framework** | `golang.org/x/tools/go/analysis` | Production-grade rules with caching and reporting | 📦 Optimized | High |
 
 ### Quick Decision Tree
@@ -279,6 +280,20 @@ func (r *AtomicRule) run(pass *analysis.Pass) (any, error) {
 - Validating that code uses specific packages
 - Ensuring type-safe patterns
 - Any check that requires knowing whether a value is a raw type vs wrapped type
+
+#### SSA (golang.org/x/tools/go/ssa)
+
+Use when you need a static single-assignment (SSA) form representation of function bodies to perform dataflow, control-flow, or whole-program analyses. The package `golang.org/x/tools/go/ssa` provides an intermediate representation (IR) of function bodies and program elements that enables advanced analyses such as def-use chains, liveness, constant propagation, and callgraph construction.
+
+When to use SSA:
+- Dataflow or control-flow checks across statements and basic blocks
+- Detecting value/state flows, liveness, or complex callgraph-based issues
+- Whole-program or intra-procedural analyses that inspect function bodies
+
+Notes:
+- SSA analyses often require `go/types` information and are slower and more complex than AST-only or TypesInfo checks.
+- `golang.org/x/tools/go/ssa/ssautil` provides helpers to build `ssa.Program` and packages; prefer reusing or caching the built program where possible for performance.
+- SSA complements `go/ast` and `go/types` — use it when function-body semantics are necessary and can't be inferred from TypesInfo alone.
 
 ### Pattern 3: Helper Functions for Reusable Logic
 
@@ -754,3 +769,25 @@ Creating a new rule:
 8. ✅ Document your rule's behavior in the `Doc` field
 
 The framework is designed for maintainability — keep rules focused, document assumptions, and prefer clarity over cleverness.
+
+## Complexity & Function Size
+
+Complexity metrics such as cyclomatic complexity and raw function size are useful heuristics to surface overly complex code. They are not absolute rules, but they help you decide when to refactor and when to introduce small, single-use helper functions.
+
+- Cyclomatic complexity: measures the number of independent paths through a function (ifs, for/while branches, switches, early returns). High complexity often indicates multiple responsibilities or difficult-to-follow logic. Recommended threshold: consider flagging functions with complexity >= 10, but tune per codebase.
+- Function size (lines of code): large functions make reasoning and testing harder. Prefer keeping functions under ~50 lines where practical; longer functions are acceptable when they primarily orchestrate well-named helpers.
+
+Guidance on refactoring and helpers:
+- Favor many small, single-use helper functions to hide local complexity. Each helper should have a self-descriptive name explaining its intent (e.g., `validateUserCredentials`, `computeRetryDelay`). Small helpers improve readability, testability, and enable targeted diagnostics in analyzers.
+- Prefer extracting a helper when a block of code introduces a new concept, repeats, or increases indentation depth beyond 2-3 levels.
+- Be pragmatic: avoid creating a helper for trivial one-liners that add indirection without clarifying intent.
+- When extracting helpers, consider their visibility and purpose: package-private helpers are fine for local clarity; if they become broadly useful, move and test them appropriately.
+
+Tooling and lint rules:
+- `gocyclo` and `golangci-lint`'s `gocyclo`/`cyclop` checks can measure complexity automatically. Use them to catch regressions, then review flagged code for appropriate refactors.
+- When writing a rule that enforces complexity limits, prefer guidance and tests demonstrating acceptable refactors rather than aggressive automatic fixes.
+
+Tradeoffs and caveats:
+- Excessive splitting into tiny helpers can scatter logic and increase cognitive load when helper names are non-descriptive. Balance helper creation with clear naming.
+- Some performance-sensitive or low-level code legitimately requires denser implementations; document and `//nolint` if needed.
+
