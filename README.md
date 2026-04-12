@@ -2,6 +2,7 @@
 
 [![Go Test](https://github.com/beltranaceves/uber-go-lint-style/actions/workflows/go-test.yml/badge.svg)](https://github.com/beltranaceves/uber-go-lint-style/actions/workflows/go-test.yml)
 [![Coverage Status](https://codecov.io/gh/beltranaceves/uber-go-lint-style/branch/main/graph/badge.svg)](https://codecov.io/gh/beltranaceves/uber-go-lint-style)
+[![Go Report Card](https://goreportcard.com/badge/github.com/beltranaceves/uber-go-lint-style)](https://goreportcard.com/report/github.com/beltranaceves/uber-go-lint-style)
 
 A golangci-lint plugin for [Uber's Go Style Guide](https://github.com/uber-go/guide).
 
