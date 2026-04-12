@@ -1,5 +1,4 @@
 package main
-package main
 
 import (
 	"bytes"
@@ -49,8 +48,8 @@ linters:
 			expected: "",
 		},
 		{
-			name: "empty content",
-			content: "",
+			name:     "empty content",
+			content:  "",
 			expected: "",
 		},
 		{
@@ -208,36 +207,36 @@ func TestIndent(t *testing.T) {
 // TestCreateOrUpdateFileIntegration tests file creation and updates in temp directories.
 func TestCreateOrUpdateFileIntegration(t *testing.T) {
 	tests := []struct {
-		name          string
-		filename      string
-		newContent    string
-		existingFile  bool
+		name            string
+		filename        string
+		newContent      string
+		existingFile    bool
 		existingContent string
-		isYAML        bool
+		isYAML          bool
 		// For testing, we pre-answer the prompt
 		setupPromptResponse func()
-		shouldError   bool
-		expectCreated bool
-		expectContent string
+		shouldError         bool
+		expectCreated       bool
+		expectContent       string
 	}{
 		{
-			name:         "create new file",
-			filename:     "new-config.yml",
-			newContent:   "version: v0.1.1",
-			existingFile: false,
-			isYAML:       true,
+			name:          "create new file",
+			filename:      "new-config.yml",
+			newContent:    "version: v0.1.1",
+			existingFile:  false,
+			isYAML:        true,
 			expectCreated: true,
 			expectContent: "version: v0.1.1",
 		},
 		{
-			name:         "file already exists with same version",
-			filename:     "existing-config.yml",
-			newContent:   "version: v0.1.1",
-			existingFile: true,
+			name:            "file already exists with same version",
+			filename:        "existing-config.yml",
+			newContent:      "version: v0.1.1",
+			existingFile:    true,
 			existingContent: "version: v0.1.1",
-			isYAML:       true,
-			expectCreated: false,
-			expectContent: "version: v0.1.1", // unchanged
+			isYAML:          true,
+			expectCreated:   false,
+			expectContent:   "version: v0.1.1", // unchanged
 		},
 	}
 
@@ -279,17 +278,17 @@ func TestCreateOrUpdateFileIntegration(t *testing.T) {
 // TestCreateOrMergeFileIntegration tests Makefile creation and merging.
 func TestCreateOrMergeFileIntegration(t *testing.T) {
 	tests := []struct {
-		name            string
+		name             string
 		existingMakefile bool
-		existingContent string
-		expectMerge     bool
-		expectCreated   bool
+		existingContent  string
+		expectMerge      bool
+		expectCreated    bool
 	}{
 		{
-			name:            "create new Makefile",
+			name:             "create new Makefile",
 			existingMakefile: false,
-			expectCreated:   true,
-			expectMerge:     false,
+			expectCreated:    true,
+			expectMerge:      false,
 		},
 		{
 			name:             "Makefile with existing user targets",
@@ -467,7 +466,7 @@ func TestCreateOrUpdateFile_WriteError(t *testing.T) {
 	// Test with a directory that doesn't exist and is invalid
 	// This should error when trying to write
 	invalidPath := "/root/no-permission/config.yml"
-	
+
 	// Skip if running as root
 	if os.Geteuid() == 0 {
 		t.Skip("test cannot run as root")
