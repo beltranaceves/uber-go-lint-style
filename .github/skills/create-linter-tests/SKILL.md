@@ -171,6 +171,7 @@ go test ./...
 
 - If the analyzer message changes, update all `// want` comments in the relevant testdata directory.
 - When adding a new analyzer, ensure it is registered in `plugin.go` and placed at the expected index used by tests.
+ - When a rule is implemented or its tests are added/updated, also update [RULES.md](RULES.md) with the rule's description, examples (GOOD/BAD), and rationale so the style guide stays in sync with the linter. Keep the documented diagnostic messages and sample snippets consistent with the analyzer implementation.
 
 ## Summary
 
