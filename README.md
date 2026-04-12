@@ -3,17 +3,17 @@
 [![Go Test](https://github.com/beltranaceves/uber-go-lint-style/actions/workflows/go-test.yml/badge.svg)](https://github.com/beltranaceves/uber-go-lint-style/actions/workflows/go-test.yml)
 [![Coverage Status](https://codecov.io/gh/beltranaceves/uber-go-lint-style/branch/main/graph/badge.svg)](https://codecov.io/gh/beltranaceves/uber-go-lint-style)
 
+A golangci-lint plugin for [Uber's Go Style Guide](https://github.com/uber-go/guide).
+
 <p align="center">
   <img src="./assets/ACKCHYUALLY.png" alt="" width="300">
   <br>
   <!-- Logo by <a href="https://github.com/hawkgs">Georgi Serev</a> -->
 </p>
 
-A golangci-lint plugin implementing custom Go linting rules based on [Uber's Go Style Guide](https://github.com/uber-go/guide).
-
 ## Overview
 
-This is a custom golangci-lint plugin that enforces Uber's internal Go coding standards through static analysis. It's designed to catch style violations early and guide developers toward safer, more maintainable code patterns.
+This is a custom linter that strives to enforce Uber's internal Go coding standards through static analysis. It's designed to catch style violations early and guide developers toward safer, more maintainable code patterns.
 
 ## Installation
 
@@ -22,17 +22,13 @@ This is a custom golangci-lint plugin that enforces Uber's internal Go coding st
 - Go 1.23+
 - golangci-lint 1.59.0+ ([Install docs](https://golangci-lint.run/usage/install/))
 
-### For Agents
 
-Copy and paste this prompt to your LLM agent (Claude Code, AmpCode, Cursor, Copilot, etc.):
-```bash
-Fetch the install guide and follow it:
-
-curl -s https://raw.githubusercontent.com/beltranaceves/uber-go-lint-style/refs/heads/main/installation.md
-
-```
-
-### For Humans
+> [!TIP]
+> If you are using any coding Agent (Claude Code, AmpCode, Cursor, Copilot, etc.), copy and paste this prompt:
+> ```bash
+> Fetch the install guide and follow it:
+> curl -s https://raw.githubusercontent.com/beltranaceves/uber-go-lint-style/refs/heads/main/installation.md
+> ```
 
 Follow these steps:
 
@@ -44,11 +40,6 @@ Run the setup script to auto-generate configuration files:
 go run github.com/beltranaceves/uber-go-lint-style/cmd/setup@latest
 ```
 
-**Note:** This requires a released version. If you want to test locally first, clone the repo and run:
-```bash
-go run ./cmd/setup
-```
-
 This creates:
 - `.custom-gcl.yml` — Plugin configuration
 - `.golangci.yml` — Linter settings
@@ -58,6 +49,12 @@ Then simply:
 ```bash
 make uber_lint
 ```
+
+> [!NOTE]  
+> This option requires a released version. If you want to test locally first, clone the repo and run:
+> ```bash
+> go run ./cmd/setup
+> ```
 
 ### Setup Option 2: Manual Configuration
 
@@ -126,6 +123,16 @@ uber_lint:
 		golangci-lint custom || exit 1; \
 	fi
 	@./custom-gcl run
+```
+
+This automatically builds the binary on first run and caches it for subsequent runs. Then simply:
+```bash
+make uber_lint
+```
+
+Optional targets: `make uber_help` for usage, `make uber_clean` to reset.
+
+```makefile
 
 # View help
 uber_help:
@@ -144,13 +151,6 @@ uber_clean:
 	@rm -f custom-gcl*
 	@echo "Cleaned custom linter artifacts"
 ```
-
-This automatically builds the binary on first run and caches it for subsequent runs. Then simply:
-```bash
-make uber_lint
-```
-
-Optional targets: `make uber_help` for usage, `make uber_clean` to reset.
 
 ---
 
