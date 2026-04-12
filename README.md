@@ -11,6 +11,21 @@ A golangci-lint plugin for [Uber's Go Style Guide](https://github.com/uber-go/gu
   <!-- Logo by <a href="https://github.com/hawkgs">Georgi Serev</a> -->
 </p>
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+	- [Prerequisites](#prerequisites)
+	- [Setup Option 1: Automated Setup (Recommended)](#setup-option-1-automated-setup-recommended)
+	- [Setup Option 2: Manual Configuration](#setup-option-2-manual-configuration)
+- [Rules](#rules)
+- [Development](#development)
+	- [Project Structure](#project-structure)
+	- [Adding a New Rule](#adding-a-new-rule)
+	- [Running Tests](#running-tests)
+- [Contributing](#contributing)
+- [Resources](#resources)
+
 ## Overview
 
 This is a custom linter that strives to enforce Uber's internal Go coding standards through static analysis. It's designed to catch style violations early and guide developers toward safer, more maintainable code patterns.
