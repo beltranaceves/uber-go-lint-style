@@ -25,22 +25,132 @@ This is a custom golangci-lint plugin that enforces Uber's internal Go coding st
 ### For Agents
 
 Copy and paste this prompt to your LLM agent (Claude Code, AmpCode, Cursor, Copilot, etc.):
+```bash
+Fetch the install guide and follow it:
 
-```
-Install and configure uber-go-lint-style by following this guide:
-https://raw.githubusercontent.com/beltranaceves/uber-go-lint-style/refs/heads/main/installation.md
+curl -s https://raw.githubusercontent.com/beltranaceves/uber-go-lint-style/refs/heads/main/installation.md
+
 ```
 
 ### For Humans
 
-You have two options:
+Follow these steps:
 
-**Recommended:** Let an agent handle the setup—it's faster and less error-prone.
+### Setup Option 1: Automated Setup (Recommended)
 
-**Alternative:** Read the [Installation Guide](installation.md) and follow it yourself. It covers:
-- Automated setup (one command)
-- Manual configuration (for custom setups)
-- Troubleshooting
+Run the setup script to auto-generate configuration files:
+
+```bash
+go run github.com/beltranaceves/uber-go-lint-style/cmd/setup@latest
+```
+
+**Note:** This requires a released version. If you want to test locally first, clone the repo and run:
+```bash
+go run ./cmd/setup
+```
+
+This creates:
+- `.custom-gcl.yml` — Plugin configuration
+- `.golangci.yml` — Linter settings
+- `Makefile` — Build and run commands
+
+Then simply:
+```bash
+make uber_lint
+```
+
+### Setup Option 2: Manual Configuration
+
+If you prefer manual setup, follow these steps:
+
+**Step 1: Create `.custom-gcl.yml`**
+
+```yaml
+version: v1.59.0
+
+plugins:
+  - module: 'github.com/beltranaceves/uber-go-lint-style'
+    version: v0.1.1  # Use latest release
+```
+
+Or for local development:
+```yaml
+plugins:
+  - module: 'github.com/beltranaceves/uber-go-lint-style'
+    path: /path/to/uber-go-lint-style
+```
+
+**Step 2: Create a `.golangci.yml` to enable the plugin and rules**
+
+```yaml
+version: "1"
+
+linters:
+  disable-all: true
+  enable:
+    - uber-go-lint-style
+
+linters-settings:
+  custom:
+    uber-go-lint-style:
+      type: "module"
+      description: "Uber Go style guide linter"
+      original-url: "github.com/beltranaceves/uber-go-lint-style"
+
+severity:
+  default-severity: error
+  rules:
+    - linters:
+        - uber-go-lint-style
+      severity: warning
+```
+
+**Step 3: Build the custom binary and run**
+
+```bash
+golangci-lint custom
+./custom-gcl run ./...
+```
+
+**Step 4: Add a Makefile (optional)**
+
+To avoid running commands manually each time, add these targets to your `Makefile`:
+
+```makefile
+.DEFAULT_GOAL := uber_lint
+
+# Run linter (builds plugin if needed)
+uber_lint:
+	@if [ ! -f "./custom-gcl" ]; then \
+		echo "Building custom golangci-lint with uber-go-lint-style plugin..."; \
+		golangci-lint custom || exit 1; \
+	fi
+	@./custom-gcl run
+
+# View help
+uber_help:
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@echo "  make uber_lint       Build plugin (if needed) and run linter"
+	@echo "  make uber_clean      Remove cached plugin binary"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make uber_lint       # First run builds plugin, subsequent runs are fast"
+	@echo "  make uber_clean      # Reset and rebuild plugin next time"
+
+.PHONY: uber_lint uber_help uber_clean
+uber_clean:
+	@rm -f custom-gcl*
+	@echo "Cleaned custom linter artifacts"
+```
+
+This automatically builds the binary on first run and caches it for subsequent runs. Then simply:
+```bash
+make uber_lint
+```
+
+Optional targets: `make uber_help` for usage, `make uber_clean` to reset.
 
 ---
 
