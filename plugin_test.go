@@ -114,6 +114,19 @@ func TestDeferCleanRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[7], "testlintdata/defer_clean")
 }
 
+func TestElseUnnecessaryRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), analyzers[8], "testlintdata/else_unnecessary")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

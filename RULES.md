@@ -147,4 +147,27 @@ defer f.Close()
 **How the check works:**
 The analyzer looks for selector calls named `Unlock`, `RUnlock`, or `Close` and reports those that are not directly used in a `defer` statement. It is conservative and may produce false positives in intentional manual-cleanup patterns (for example, unlocking inside tight loops); such cases can be suppressed with `//nolint:defer_clean`.
 
+### `else_unnecessary` — Avoid unnecessary `else` when both branches set the same variable
+
+**What it detects:**
+```go
+var a int
+if b {
+	a = 100
+} else {
+	a = 10
+}
+```
+
+**Why:** Initializing the variable to the `else` value and keeping a single `if` branch is clearer and shorter:
+```go
+a := 10
+if b {
+	a = 100
+}
+```
+
+**How the check works:**
+The analyzer inspects `if` statements with a plain `else` block and reports cases where both the `if` and `else` bodies consist of a single assignment to the same identifier. It reports a diagnostic at the `if` site with a suggestion to initialize the variable before the `if` and remove the `else` block. Complex assignments, declarations (":="), or multi-statement branches are ignored to avoid false positives.
+
 
