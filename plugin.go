@@ -48,6 +48,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.DeclGroupRule{}).BuildAnalyzer(),
 		(&rules.DeferCleanRule{}).BuildAnalyzer(),
 		(&rules.ElseUnnecessaryRule{}).BuildAnalyzer(),
+		(&rules.EmbedPublicRule{}).BuildAnalyzer(),
 	}, nil
 }
 

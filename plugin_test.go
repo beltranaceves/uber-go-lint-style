@@ -127,6 +127,19 @@ func TestElseUnnecessaryRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[8], "testlintdata/else_unnecessary")
 }
 
+func TestEmbedPublicRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), analyzers[9], "testlintdata/embed_public")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

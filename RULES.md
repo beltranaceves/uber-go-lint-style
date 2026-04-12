@@ -170,4 +170,24 @@ if b {
 **How the check works:**
 The analyzer inspects `if` statements with a plain `else` block and reports cases where both the `if` and `else` bodies consist of a single assignment to the same identifier. It reports a diagnostic at the `if` site with a suggestion to initialize the variable before the `if` and remove the `else` block. Complex assignments, declarations (":="), or multi-statement branches are ignored to avoid false positives.
 
+### `embed_public` — Avoid Embedding Types in Public Structs
+
+**What it detects:**
+```go
+// BAD: exported struct embedding exported type
+type ConcreteList struct {
+	*AbstractList // ❌ VIOLATION - leaks implementation detail
+}
+
+// GOOD: use a private field and explicit delegate methods
+type ConcreteList struct {
+	list *AbstractList
+}
+```
+
+**Why:** Embedding a public type in a public struct exposes implementation details, constrains future changes (removing or replacing the embedded type is a breaking change), and makes documentation harder to read.
+
+**How the check works:**
+This AST-based analyzer looks for exported (`type` names starting with an uppercase letter) struct declarations that contain anonymous (embedded) fields whose type name is exported. It reports the embedded field position with a clear diagnostic. Cases can be suppressed with `//nolint:embed_public` when embedding is intentional.
+
 
