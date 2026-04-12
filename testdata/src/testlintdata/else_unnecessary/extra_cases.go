@@ -29,3 +29,5 @@ func sideEffect(b bool) {
 	}
 	_ = a
 }
+
+func f() int { return 1 }
