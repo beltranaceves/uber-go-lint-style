@@ -101,6 +101,19 @@ func TestDeclGroupRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[6], "testlintdata/decl_group")
 }
 
+func TestDeferCleanRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), analyzers[7], "testlintdata/defer_clean")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

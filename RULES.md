@@ -119,3 +119,32 @@ var y int = 2 // ✅ grouped suggestion when same explicit type
 **How the check works:**
 It's a conservative AST-only analyzer that looks for adjacent single-spec `GenDecl`s. It always suggests grouping multiple single `import` declarations. For top-level `const`, `var`, and `type` it recommends grouping only when declarations clearly share an explicit type, literal kind, or `iota` usage to avoid false positives. Function-local adjacent `var` declarations are recommended to be grouped even if unrelated, per style guidance.
 
+### `defer_clean` — Use `defer` to clean up resources such as files and locks
+
+**What it detects:**
+```go
+p.Lock()
+if p.count < 10 {
+	p.Unlock() // ❌ VIOLATION - non-deferred unlock before an early return
+	return p.count
+}
+
+f, _ := os.Open("file")
+f.Close() // ❌ VIOLATION - non-deferred close
+```
+
+**Correct usage:**
+```go
+p.Lock()
+defer p.Unlock()
+
+f, _ := os.Open("file")
+defer f.Close()
+```
+
+**Why:** Missing cleanup calls (for example, `Unlock` or `Close`) are easy to miss across multiple return paths. `defer` keeps the cleanup adjacent to the acquisition and reduces the chance of leaks or forgotten unlocks while having negligible runtime overhead in typical functions.
+
+**How the check works:**
+The analyzer looks for selector calls named `Unlock`, `RUnlock`, or `Close` and reports those that are not directly used in a `defer` statement. It is conservative and may produce false positives in intentional manual-cleanup patterns (for example, unlocking inside tight loops); such cases can be suppressed with `//nolint:defer_clean`.
+
+

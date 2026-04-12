@@ -43,6 +43,7 @@ This skill provides a reproducible workflow and templates to create high-quality
 7. Include type-sensitive cases (if analyzer uses TypesInfo) — e.g., interface wrappers, pointer vs value, aliased imports.
 8. Add README or comment at top describing the intent of each test file.
 9. Run `go test ./...` and iterate until `analysistest` matches exactly.
+10. Add the implemented rule to `RULES.md` with examples and rationale if not already documented.
 
 ## Decision points / branching logic
 
