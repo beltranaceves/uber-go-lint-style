@@ -234,6 +234,20 @@ func TestFunctionalOptionRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[16], "testlintdata/functional_option")
 }
 
+func TestGlobalDeclRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// GlobalDeclRule was added at the end of the analyzers list
+	analysistest.Run(t, testdataDir(t), analyzers[17], "testlintdata/global_decl")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

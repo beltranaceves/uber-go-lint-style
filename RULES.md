@@ -50,6 +50,38 @@ type T struct {
 **How the check works:**
 The analyzer dynamically retrieves predeclared identifiers from `go/types.Universe` and inspects `GenDecl`, function parameters/receivers, and struct fields via the AST to report shadowing occurrences.
 
+### `global_decl` — Top-level Variable Declarations
+
+**What it detects:**
+```go
+var _s string = F()  // ❌ VIOLATION - redundant explicit type
+
+func F() string { return "A" }
+```
+
+**Correct usage:**
+```go
+var _s = F() // ✅ OK - type inferred from initializer
+```
+
+Specify the type when the initializer's type differs from the declared type:
+
+```go
+type myError struct{}
+
+func (myError) Error() string { return "error" }
+
+func F() myError { return myError{} }
+
+var _e error = F() // ✅ OK - explicit type required (widening to error)
+```
+
+**Why:** Repeating the type on a top-level `var` when the initializer already expresses the type is redundant and noisy. Prefer `var name = expr` for clarity; keep an explicit type only when you intentionally want a different (e.g., interface) type than the initializer provides.
+
+**How the check works:**
+The analyzer inspects top-level `var` declarations and, when a `ValueSpec` includes both an explicit type and an initializer, it uses type information (`pass.TypesInfo`) to compare the declared type with the initializer's type. If they are identical, the analyzer reports a diagnostic suggesting omitting the explicit type. Suppress with `//nolint:global_decl` for intentional exceptions.
+
+
 ### `error_name` — Error naming conventions
 
 **What it detects:**
