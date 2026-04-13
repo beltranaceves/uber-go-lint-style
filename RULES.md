@@ -307,3 +307,65 @@ starting with `Fatal`, and plain `panic(...)` invocations when they occur
 outside of the `main` function in package `main`. Files ending in `_test.go`
 are ignored. Suppress with `//nolint:exit_main` when termination from a helper
 is intentional.
+
+### `function_order` — Group and order functions for readability
+
+**What it detects:**
+```go
+// Bad: type declared after methods
+func (s *something) Stop() {}
+
+type something struct{}
+
+// Bad: constructor appears after methods
+func newSomething() *something { return &something{} }
+
+// Bad: methods of A interleaved with B
+func (a *A) One() {}
+func (b *B) First() {}
+func (a *A) Two() {}
+
+// Bad: exported methods appear after unexported
+func (c *C) unexported() {}
+func (c *C) Exported() {}
+
+// Bad: caller declared after callee
+func (d *D) Callee() {}
+func (d *D) Caller() { d.Callee() }
+```
+
+**Why:**
+Grouping functions by receiver and ordering them (constructors, exported methods,
+then helpers) improves local reasoning, makes call flow easier to follow, and
+reduces search/grep friction when maintaining a type.
+
+**How the check works:**
+- Ensures top-level `type`, `const`, and `var` declarations appear before any
+	function declarations in a file.
+- Detects a `NewX`/`newX` constructor and requires it to appear immediately
+	after the corresponding `type X` declaration and before `X`'s methods.
+- Groups methods by the receiver and enforces that methods for a receiver form
+	a contiguous block (no interleaving with other receivers or package-level
+	functions).
+- Enforces exported methods appear before unexported ones within each receiver
+	block.
+- Conservative call-order check: for methods on the same receiver, if method
+	A contains a direct selector call `r.B()` on the receiver identifier and A
+	appears after B, the analyzer reports a diagnostic asking to declare A
+	before B. This is a syntactic, conservative check — it only considers
+	statically visible selector calls on the receiver variable and does not
+	attempt to resolve interface dispatch or function-value calls.
+
+**Detection details & caveats:**
+- The rule operates per-file; it does not reorder or compare across multiple
+	files in a package.
+- The call-order logic uses syntactic receiver-identifier matching (e.g., `s.`)
+	and may miss or conservatively ignore calls performed via interfaces, alias
+	variables, or reflection. For stricter resolution, type-aware or SSA-based
+	analysis would be required.
+- The analyzer reports the first offending out-of-order top-level declaration
+	for the types-before-functions rule to avoid noisy output.
+
+**Suppressing:** Use `//nolint:function_order` to skip checks in exceptional
+cases where ordering must differ for clarity or initialization reasons.
+

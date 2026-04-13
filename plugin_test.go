@@ -206,6 +206,20 @@ func TestFunctionNameRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[14], "testlintdata/function_name")
 }
 
+func TestFunctionOrderRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// FunctionOrderRule was added at the end of the analyzers list
+	analysistest.Run(t, testdataDir(t), analyzers[15], "testlintdata/function_order")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
