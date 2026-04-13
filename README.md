@@ -12,6 +12,9 @@ A golangci-lint plugin for [Uber's Go Style Guide](https://github.com/uber-go/gu
   <!-- Logo by <a href="https://github.com/hawkgs">Georgi Serev</a> -->
 </p>
 
+> [!CAUTION]
+> **Disclaimer**: this project contains significant amounts of auto-generated code, pending *thorough review*.
+
 ## Table of Contents
 
 - [Overview](#overview)
