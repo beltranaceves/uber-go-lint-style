@@ -53,6 +53,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.ErrorNameRule{}).BuildAnalyzer(),
 		(&rules.ErrorOnceRule{}).BuildAnalyzer(),
 		(&rules.ExitMainRule{}).BuildAnalyzer(),
+		(&rules.FunctionNameRule{}).BuildAnalyzer(),
 	}, nil
 }
 
