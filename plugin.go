@@ -59,6 +59,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.GlobalDeclRule{}).BuildAnalyzer(),
 		(&rules.GlobalMutRule{}).BuildAnalyzer(),
 		(&rules.GlobalNameRule{}).BuildAnalyzer(),
+		(&rules.GoroutineExitRule{}).BuildAnalyzer(),
 	}, nil
 }
 

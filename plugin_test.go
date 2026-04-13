@@ -276,6 +276,20 @@ func TestGlobalNameRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[19], "testlintdata/global_name")
 }
 
+func TestGoroutineExitRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// GoroutineExitRule was appended at the end of the analyzers list
+	analysistest.Run(t, testdataDir(t), analyzers[20], "testlintdata/goroutine_exit")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
