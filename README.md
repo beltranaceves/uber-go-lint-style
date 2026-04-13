@@ -185,6 +185,9 @@ uber-go-lint-style/
 
 ### Adding a New Rule
 
+> [!NOTE]
+> **Alternative approach:** For more detailed guidance on rule structure, performance patterns, and testing conventions, see `.github/skills/develop-linter-rules/SKILL.md`. This skill covers best practices, analysis approach selection, and examples.
+
 1. Create a new file in `rules/` (e.g., `rules/myrule.go`):
 
 ```go
@@ -209,8 +212,6 @@ func (r *MyRule) run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 ```
-
-**Alternative approach:** For more detailed guidance on rule structure, performance patterns, and testing conventions, see `.github/skills/develop-linter-rules/SKILL.md`. This skill covers best practices, analysis approach selection, and examples.
 
 2. Add test data in `testdata/src/testlintdata/myrule/`:
 
