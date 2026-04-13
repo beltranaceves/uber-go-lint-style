@@ -398,6 +398,48 @@ reduces search/grep friction when maintaining a type.
 - The analyzer reports the first offending out-of-order top-level declaration
 	for the types-before-functions rule to avoid noisy output.
 
+
+### `global_mut` — Avoid mutable package-level variables
+
+**What it detects:**
+```go
+var counter = 0                // ❌ VIOLATION - mutable global
+var _timeNow = time.Now        // ❌ VIOLATION - function-value global
+var a, b = f(), g()            // ❌ VIOLATION - multi-name spec with runtime inits
+
+const Version = "1.0"         // ✅ OK - consts are allowed
+var ErrNotFound = errors.New("not found") // ✅ OK - sentinel error named Err*
+var ExportedCounter = 0        // ✅ OK - exported package API allowed
+```
+
+**Why:**
+Mutable package-level variables increase cognitive load, make code harder to
+test, and can lead to surprising shared state and data races. Prefer passing
+dependencies explicitly (dependency injection), scoping state behind types,
+or exposing read-only package-level values via constructors or constants.
+
+**How the check works:**
+- The analyzer inspects top-level `var` declarations (AST `GenDecl` with `var`).
+- It reports variables that are likely mutable: declared without an explicit
+	exported name, or initialized with non-trivial expressions (function calls,
+	composite literals, or basic literals).
+- Exceptions:
+	- Exported names (starting with an uppercase letter) are skipped because
+		package APIs often require package-level values.
+	- Sentinel errors named `Err...` whose initializer has the `error` type
+		are allowed (detected using `pass.TypesInfo`).
+- When a `ValueSpec` contains multiple names, the analyzer coalesces the
+	result into a single diagnostic at the `var` site listing the flagged names.
+
+**Implementation notes:**
+- The analyzer uses `pass.TypesInfo` when available to detect `error`-typed
+	initializers and should run under `LoadModeTypesInfo` for best accuracy.
+- Diagnostics are reported via `analysis.Diagnostic` and are treated as
+	violations by golangci-lint.
+
+**Suppressing:** Use `//nolint:global_mut` to suppress the diagnostic for
+specific cases where a package-level mutable variable is intentional.
+
 **Suppressing:** Use `//nolint:function_order` to skip checks in exceptional
 cases where ordering must differ for clarity or initialization reasons.
 
