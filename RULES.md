@@ -233,4 +233,39 @@ const (
 **Detection heuristic:** This rule includes heuristics to reduce false positives: it only applies to const groups tied to named integer types and ignores unrelated `iota` uses. It also recognizes common cases where zero is intentional (and can be suppressed with `//nolint:enum_start` or an explanatory comment). Because some complex constant expressions are hard to evaluate statically, the analyzer relies on conservative checks rather than full constant evaluation; review cases that the analyzer flags to confirm intent.
 
 
+### `error_once` — Handle errors once
 
+**What it detects:**
+```go
+u, err := getUser(id)
+if err != nil {
+    log.Printf("could not get user %q: %v", id, err)
+    return err // ❌ VIOLATION - logged and returned
+}
+
+// Acceptable: wrap with %w and return
+if err := doThing(); err != nil {
+    return fmt.Errorf("doThing: %w", err) // ✅ OK - wrapped return
+}
+
+// Acceptable: log and degrade (no return)
+if err := emitMetrics(); err != nil {
+    log.Printf("metrics failed: %v", err) // ✅ OK - log and continue
+}
+```
+
+**Why:**
+Logging an error and returning it in the same place causes duplicated handling
+and noisy logs when callers also log or handle the error. Prefer returning the
+error (optionally wrapped with `%w`) so higher-level callers control logging
+and handling, or log and recover locally without returning the error.
+
+**How the check works:**
+- AST-only analyzer that finds `if err != nil { ... }` blocks where a call with
+  a common logging method name (Printf, Errorf, Infof, etc.) appears and the
+  error identifier is returned in the same block.
+- Treats `fmt.Errorf("...%w...", err)` as a safe wrapped return and does not flag it.
+- Conservative by design: it matches common logging method names and local
+  logger method calls, but may miss custom logging helpers or logging that
+  happens outside the `if` body. Suppress with `//nolint:error_once` when
+  logging-and-return is intentional.

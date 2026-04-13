@@ -19,12 +19,12 @@ var errInternal = errors.New("internal")
 type NotFound struct{} // want "error type names should end with 'Error'"
 
 func (n NotFound) Error() string {
-    return "not found"
+	return "not found"
 }
 
 // GOOD: error type named with Error suffix
 type ResolveError struct{}
 
 func (r ResolveError) Error() string {
-    return "resolve"
+	return "resolve"
 }

@@ -51,6 +51,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.EmbedPublicRule{}).BuildAnalyzer(),
 		(&rules.EnumStartRule{}).BuildAnalyzer(),
 		(&rules.ErrorNameRule{}).BuildAnalyzer(),
+		(&rules.ErrorOnceRule{}).BuildAnalyzer(),
 	}, nil
 }
 
