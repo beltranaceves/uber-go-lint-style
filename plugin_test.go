@@ -220,6 +220,20 @@ func TestFunctionOrderRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[15], "testlintdata/function_order")
 }
 
+func TestFunctionalOptionRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// FunctionalOptionRule was added at the end of the analyzers list
+	analysistest.Run(t, testdataDir(t), analyzers[16], "testlintdata/functional_option")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

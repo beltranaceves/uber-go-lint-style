@@ -369,3 +369,30 @@ reduces search/grep friction when maintaining a type.
 **Suppressing:** Use `//nolint:function_order` to skip checks in exceptional
 cases where ordering must differ for clarity or initialization reasons.
 
+### `functional_option` — Prefer functional options for expandable APIs
+
+**What it detects:**
+```go
+func Open(addr string, cache bool, logger *zap.Logger) (*Connection, error) // ❌ VIOLATION - 3+ params
+
+func OpenWithOpts(addr string, opts ...Option) (*Connection, error) // ✅ OK - functional options
+```
+
+**Why:**
+The functional options pattern improves API ergonomics and future-proofing for
+exported constructors and public functions that already take several
+parameters. It makes optional arguments explicit, avoids breaking changes when
+adding new options, and can make defaults and configuration clearer to callers.
+
+**How the check works:**
+- The analyzer is AST-only and runs per-file during the analysis `Run` pass.
+- It inspects exported (`IsExported`) top-level functions and methods.
+- It counts parameters by summing the parameter names (an anonymous field
+	counts as one). If the total is 3 or more the analyzer reports a diagnostic
+	at the function identifier recommending the functional options pattern.
+- This rule is conservative and purely syntactic: it does not use type
+	information and does not try to distinguish which parameters are optional.
+
+**Suppressing:** Use `//nolint:functional_option` to opt out for specific
+cases where the pattern is undesirable.
+
