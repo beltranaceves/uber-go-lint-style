@@ -140,6 +140,19 @@ func TestEmbedPublicRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[9], "testlintdata/embed_public")
 }
 
+func TestEnumStartRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), analyzers[10], "testlintdata/enum_start")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
