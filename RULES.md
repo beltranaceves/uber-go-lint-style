@@ -385,13 +385,14 @@ parameters. It makes optional arguments explicit, avoids breaking changes when
 adding new options, and can make defaults and configuration clearer to callers.
 
 **How the check works:**
-- The analyzer is AST-only and runs per-file during the analysis `Run` pass.
-- It inspects exported (`IsExported`) top-level functions and methods.
-- It counts parameters by summing the parameter names (an anonymous field
-	counts as one). If the total is 3 or more the analyzer reports a diagnostic
-	at the function identifier recommending the functional options pattern.
-- This rule is conservative and purely syntactic: it does not use type
-	information and does not try to distinguish which parameters are optional.
+- The analyzer inspects exported (`IsExported`) top-level functions and methods and only considers functions with three or more parameters.
+- For accuracy it uses the `buildssa` pass to obtain SSA/CFG for the function and combines SSA information with lightweight AST checks:
+	- It identifies the SSA basic blocks that reference each parameter (via SSA referrers).
+	- It identifies return blocks in the function's CFG.
+	- A parameter is considered optional if it is never referenced, or if there exists a path from the function entry to a return block that does not traverse any block that uses the parameter.
+- The analyzer reports a diagnostic when the function has >= 3 parameters and at least one parameter is classified as optional by the SSA/CFG analysis.
+- If SSA data is unavailable (rare in the plugin test harness), the analyzer falls back to a conservative syntactic report.
+- This path-sensitive approach reduces false positives compared to simply counting parameters, but it is conservative about indirect uses (goroutines, reflection, stores to globals) and may be extended later for deeper interprocedural checks.
 
 **Suppressing:** Use `//nolint:functional_option` to opt out for specific
 cases where the pattern is undesirable.
