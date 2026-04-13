@@ -50,6 +50,28 @@ type T struct {
 **How the check works:**
 The analyzer dynamically retrieves predeclared identifiers from `go/types.Universe` and inspects `GenDecl`, function parameters/receivers, and struct fields via the AST to report shadowing occurrences.
 
+### `error_name` — Error naming conventions
+
+**What it detects:**
+```go
+var BrokenLink = errors.New("broken")        // ❌ VIOLATION - exported error should be prefixed Err
+var notFound = fmt.Errorf("not found")      // ❌ VIOLATION - unexported error should be prefixed err
+
+type NotFound struct{}                         // ❌ VIOLATION - implements Error() but lacks 'Error' suffix
+func (n NotFound) Error() string { return "" }
+
+// Correct examples:
+var ErrCouldNotOpen = errors.New("could not open")
+var errInternal = errors.New("internal")
+type ResolveError struct{}
+func (r ResolveError) Error() string { return "" }
+```
+
+**Why:** Exported package-level error variables should be discoverable and consistent (`Err` prefix) so callers can match them with `errors.Is`. Unexported package errors should follow a parallel `err` prefix to signal package-local use. Custom error types should end with the `Error` suffix to make their intent obvious and simplify error type matching with `errors.As`.
+
+**How the check works:**
+The analyzer inspects package-level `var` declarations and uses `pass.TypesInfo` to detect variables of the built-in `error` type. It enforces `Err`/`err` prefixes for exported and unexported variables respectively. It also looks at named types and checks whether they implement an `Error() string` method; if so, it requires the type name to end with `Error`. The rule runs under the plugin's `LoadModeTypesInfo` so type information is available.
+
 ### `channel_size` — Prefer unbuffered or size one channels
 
 **What it detects:**
