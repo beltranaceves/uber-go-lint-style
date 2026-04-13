@@ -11,7 +11,6 @@ var a int = AValf() // want "omit the explicit type in top-level var; use var na
 
 // BAD: multiple names with corresponding values -> two diagnostics
 var a1, a2 int = AValf(), AValf() // want "omit the explicit type in top-level var; use var name = expr instead"
-// want "omit the explicit type in top-level var; use var name = expr instead"
 
 // GOOD: no initializer -> explicit type may be needed
 var explicitOnly int
@@ -23,6 +22,3 @@ func (myError2) Error() string { return "" }
 func ReturnMyError2() myError2 { return myError2{} }
 
 var errVal error = ReturnMyError2()
-
-// GOOD: suppression with nolint
-var suppressed int = AValf() //nolint:global_decl

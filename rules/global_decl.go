@@ -50,9 +50,11 @@ func (r *GlobalDeclRule) run(pass *analysis.Pass) (any, error) {
 					continue
 				}
 
-				// Choose value index: if values match names one-to-one, use corresponding value,
-				// otherwise use the first value (common case: single RHS expression).
-				for i, name := range valSpec.Names {
+				// If any of the declared names have an initializer whose type is
+				// identical to the explicit declared type, report a single
+				// diagnostic for the whole ValueSpec (prefer omitting the type).
+				matched := false
+				for i := range valSpec.Names {
 					valueIndex := 0
 					if len(valSpec.Values) == len(valSpec.Names) {
 						valueIndex = i
@@ -65,11 +67,17 @@ func (r *GlobalDeclRule) run(pass *analysis.Pass) (any, error) {
 					}
 
 					if types.Identical(declaredType, valType) {
-						pass.Report(analysis.Diagnostic{
-							Pos:     name.Pos(),
-							Message: "omit the explicit type in top-level var; use var name = expr instead",
-						})
+						matched = true
+						break
 					}
+				}
+
+				if matched && len(valSpec.Names) > 0 {
+					// Report at the first identifier in the spec.
+					pass.Report(analysis.Diagnostic{
+						Pos:     valSpec.Names[0].Pos(),
+						Message: "omit the explicit type in top-level var; use var name = expr instead",
+					})
 				}
 			}
 		}
