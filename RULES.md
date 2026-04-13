@@ -269,3 +269,41 @@ and handling, or log and recover locally without returning the error.
   logger method calls, but may miss custom logging helpers or logging that
   happens outside the `if` body. Suppress with `//nolint:error_once` when
   logging-and-return is intentional.
+
+### `exit_main` — Call `os.Exit`, `log.Fatal`, and `panic` only in `main()`
+
+**What it detects:**
+```go
+func helper() {
+	if err != nil {
+		log.Fatal(err) // ❌ VIOLATION - only allowed inside main()
+	}
+}
+
+func anotherHelper() {
+	os.Exit(1) // ❌ VIOLATION - only allowed inside main()
+}
+
+func panicker() {
+	panic("boom") // ❌ VIOLATION - panic used as program exit
+}
+
+func main() {
+	if err != nil {
+		log.Fatal(err) // ✅ OK
+	}
+}
+```
+
+**Why:** Exiting from non-`main` functions makes control flow non-obvious, is
+hard to test (it may terminate tests), and skips deferred cleanup. `panic`
+should not be used as a program-exit mechanism — prefer returning an error so
+callers (and `main`) can decide how to handle failures.
+
+**How the check works:**
+The analyzer walks function bodies and uses `pass.TypesInfo` to resolve selector
+expressions. It flags calls to `os.Exit`, `log` package functions with names
+starting with `Fatal`, and plain `panic(...)` invocations when they occur
+outside of the `main` function in package `main`. Files ending in `_test.go`
+are ignored. Suppress with `//nolint:exit_main` when termination from a helper
+is intentional.

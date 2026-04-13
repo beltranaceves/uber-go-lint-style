@@ -179,6 +179,19 @@ func TestErrorOnceRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[12], "testlintdata/error_once")
 }
 
+func TestExitMainRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), analyzers[13], "testlintdata/exit_main")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
