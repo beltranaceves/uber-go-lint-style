@@ -9,7 +9,7 @@ A golangci-lint plugin for [Uber's Go Style Guide](https://github.com/uber-go/gu
 <p align="center">
   <img src="./assets/ACKCHYUALLY.png" alt="" width="300">
   <br>
-  <!-- Logo by <a href="https://github.com/hawkgs">Georgi Serev</a> -->
+  <!-- Logo by <a href="https://">origin</a> -->
 </p>
 
 > [!CAUTION]
@@ -177,19 +177,26 @@ See [RULES.md](RULES.md) for full rule descriptions and examples.
 ```
 uber-go-lint-style/
 ├── plugin.go                # golangci-lint plugin entry point
-├── plugin_test.go           # Plugin tests
-├── rules/                   # Custom rule implementations
-│   ├── todo.go             # TODO rule
-│   └── atomic.go           # Atomic rule
-├── testdata/               # Test data for rules
-├── style_guide/            # Uber style guide documentation
-└── test-client/            # Client integration tests
+├── plugin_test.go           # plugin tests
+├── rules/                   # rule implementations (one file per rule)
+├── testdata/                # testdata used by rule tests
+├── cmd/                     # helper CLI tools (e.g., setup)
+│   └── setup/               # setup command source
+├── style_guide/             # generated and source docs for the style guide
+│   └── rules/               # markdown source files for the guide
+├── test-client/             # integration test client and examples
+├── assets/                  # images and other assets
+├── Makefile                 # convenience targets
+├── installation.md          # installation instructions
+└── RULES.md                 # rule descriptions and examples
 ```
 
 ### Adding a New Rule
 
 > [!NOTE]
-> **Alternative approach:** For more detailed guidance on rule structure, performance patterns, and testing conventions, see `.github/skills/develop-linter-rules/SKILL.md`. This skill covers best practices, analysis approach selection, and examples.
+> If you are using coding Agents, or looking for more detailed guidance on rule structure, performance patterns, and testing conventions, there are two included [skills](.github/skills/):
+> - `.github/skills/develop-linter-rules/SKILL.md` covers rule structure, analysis approaches, performance considerations, and examples.
+> - `.github/skills/create-linter-tests/SKILL.md` helps scaffold test cases and edge-case coverage to reduce boilerplate.
 
 1. Create a new file in `rules/` (e.g., `rules/myrule.go`):
 
