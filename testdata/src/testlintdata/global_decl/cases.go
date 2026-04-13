@@ -17,12 +17,12 @@ var a1, a2 int = AValf(), AValf() // want "omit the explicit type in top-level v
 var explicitOnly int
 
 // GOOD: explicit type differs from initializer (widening to interface)
-type myError struct{}
+type myError2 struct{}
 
-func (myError) Error() string { return "" }
-func ReturnMyError() myError  { return myError{} }
+func (myError2) Error() string { return "" }
+func ReturnMyError2() myError2 { return myError2{} }
 
-var errVal error = ReturnMyError()
+var errVal error = ReturnMyError2()
 
 // GOOD: suppression with nolint
 var suppressed int = AValf() //nolint:global_decl
