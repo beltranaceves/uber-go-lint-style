@@ -262,6 +262,20 @@ func TestGlobalMutRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[18], "testlintdata/global_mut")
 }
 
+func TestGlobalNameRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// GlobalNameRule was appended after GlobalMutRule
+	analysistest.Run(t, testdataDir(t), analyzers[19], "testlintdata/global_name")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
