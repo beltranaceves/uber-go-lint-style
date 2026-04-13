@@ -248,6 +248,20 @@ func TestGlobalDeclRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[17], "testlintdata/global_decl")
 }
 
+func TestGlobalMutRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// GlobalMutRule is appended at the end of the analyzers list
+	analysistest.Run(t, testdataDir(t), analyzers[18], "testlintdata/global_mut")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
