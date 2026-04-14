@@ -34,6 +34,9 @@ A golangci-lint plugin for [Uber's Go Style Guide](https://github.com/uber-go/gu
 
 This is a custom linter that strives to enforce Uber's internal Go coding standards through static analysis. It's designed to catch style violations early and guide developers toward safer, more maintainable code patterns.
 
+> [!WARNING]
+> This plugin enforces many subjective style rules through the use of heuristics. We recommend configuring it to report findings as warnings by default (see the "Installation" section for an example). Teams can opt into stricter severities when appropriate.
+
 ## Installation
 
 ### Prerequisites
@@ -107,11 +110,14 @@ linters-settings:
       original-url: "github.com/beltranaceves/uber-go-lint-style"
 
 severity:
-  default-severity: error
-  rules:
-    - linters:
-        - uber-go-lint-style
-      severity: warning
+	# Recommended: many rules are heuristic or subjective. Configure the
+	# plugin to report findings as warnings by default so suggestions are
+	# visible to developers without failing CI builds. Projects can opt-in
+	# to stricter settings per-team or per-rule as needed.
+	rules:
+		- linters:
+				- uber-go-lint-style
+			severity: warning
 ```
 
 **Step 3: Build the custom binary and run**
