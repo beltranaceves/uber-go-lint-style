@@ -491,6 +491,52 @@ shutdown ordering.
 **Suppressing:** Use `//nolint:goroutine_init` to suppress the check when an
 unavoidable goroutine must be started during package init (rare, and discouraged).
 
+### `init` — Avoid init()
+
+**What it detects:**
+```go
+var _defaultFoo Foo
+
+func init() {
+		_defaultFoo = Foo{
+				// ... runtime or environment dependent work
+		}
+}
+
+// Also: init() reading files or environment
+func init() {
+		cwd, _ := os.Getwd()
+		raw, _ := os.ReadFile(path.Join(cwd, "config", "config.yaml"))
+		yaml.Unmarshal(raw, &_config)
+}
+```
+
+**Why:**
+- `init()` can make package initialization non-deterministic or dependent on
+	environment and invocation order.
+- `init()` ordering and cross-package side-effects are brittle and hard to
+	reason about.
+- `init()` frequently encourages accessing global or environment state and
+	performing I/O during package initialization, both of which are poor
+	practices for libraries.
+
+Code that cannot satisfy these constraints usually belongs in a helper or
+should be performed from `main()` where lifecycle and errors can be handled.
+
+**How the check works:**
+- This is an AST-based analyzer that flags top-level `func init()`
+	declarations. When an `init()` is found the analyzer reports a diagnostic
+	recommending explicit initialization in `main` or via helper functions.
+- The rule is intentionally simple and conservative; it flags `init()` in
+	general rather than attempting to prove safety of complex init bodies.
+
+**Exceptions & suppressing:**
+- There are legitimate, rare uses of `init()` (for example: pluggable
+	registration hooks, deterministic precomputation, or minimal expressions
+	that cannot be expressed as a single assignment). Use `//nolint:init` to
+	suppress the diagnostic in documented, intentional cases.
+
+
 ### `goroutine_forget` — Don't fire-and-forget goroutines
 
 **What it detects:**

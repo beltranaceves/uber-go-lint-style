@@ -64,6 +64,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.GoroutineInitRule{}).BuildAnalyzer(),
 		(&rules.ImportAliasRule{}).BuildAnalyzer(),
 		(&rules.ImportGroupRule{}).BuildAnalyzer(),
+		(&rules.InitRule{}).BuildAnalyzer(),
 	}, nil
 }
 

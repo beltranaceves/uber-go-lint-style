@@ -359,6 +359,20 @@ func TestImportGroupRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[24], "testlintdata/import_group")
 }
 
+func TestInitRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// InitRule is appended after ImportAliasRule and before ImportGroupRule in plugin.go
+	analysistest.Run(t, testdataDir(t), analyzers[25], "testlintdata/init")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
