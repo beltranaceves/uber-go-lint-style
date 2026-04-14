@@ -332,6 +332,20 @@ func TestImportAliasRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[23], "testlintdata/import_alias")
 }
 
+func TestImportAliasRule_MissingTrace(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// Run analyzer against separate package that only imports example.com/trace/v2
+	analysistest.Run(t, testdataDir(t), analyzers[23], "testlintdata/import_alias_missing")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

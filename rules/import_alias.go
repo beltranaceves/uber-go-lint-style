@@ -29,8 +29,8 @@ func (r *ImportAliasRule) run(pass *analysis.Pass) (any, error) {
 		pkgByPath[ipkg.Path()] = ipkg.Name()
 	}
 
-	// Count how many imports share the same declared package name
-	defaultNameCount := make(map[string]int)
+	// Map declared package name -> set of unique import paths that declare that name
+	declaredToPaths := make(map[string]map[string]bool)
 	for _, file := range pass.Files {
 		for _, ispec := range file.Imports {
 			if ispec.Name != nil {
@@ -46,7 +46,12 @@ func (r *ImportAliasRule) run(pass *analysis.Pass) (any, error) {
 			} else {
 				declared = path.Base(importPath)
 			}
-			defaultNameCount[declared]++
+			m, ok := declaredToPaths[declared]
+			if !ok {
+				m = make(map[string]bool)
+				declaredToPaths[declared] = m
+			}
+			m[importPath] = true
 		}
 	}
 
@@ -78,9 +83,10 @@ func (r *ImportAliasRule) run(pass *analysis.Pass) (any, error) {
 				}
 			} else {
 				alias := ispec.Name.Name
-				// If declared==last and there is no conflict, alias is unnecessary
+				// If declared==last and there is no conflict (only one unique import path uses this declared name), alias is unnecessary
 				if declared == last {
-					if defaultNameCount[declared] <= 1 {
+					paths := declaredToPaths[declared]
+					if len(paths) <= 1 {
 						pass.Report(analysis.Diagnostic{
 							Pos:     ispec.Name.Pos(),
 							Message: fmt.Sprintf("unnecessary import alias '%s' for package '%s'; remove the alias", alias, declared),
