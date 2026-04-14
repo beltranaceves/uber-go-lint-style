@@ -304,6 +304,20 @@ func TestGoroutineForgetRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[21], "testlintdata/goroutine_forget")
 }
 
+func TestGoroutineInitRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// GoroutineInitRule was appended after GoroutineForgetRule
+	analysistest.Run(t, testdataDir(t), analyzers[22], "testlintdata/goroutine_init")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

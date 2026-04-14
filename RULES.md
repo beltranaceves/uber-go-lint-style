@@ -420,6 +420,52 @@ tests to exit before background work completes.
 goroutine without an obvious wait is intentional.
 
 
+### `goroutine_init` — No goroutines in `init()`
+
+**What it detects:**
+```go
+func init() {
+	go doWork() // ❌ VIOLATION - starts a goroutine from init()
+}
+
+func NewWorker() *Worker {
+	w := &Worker{stop: make(chan struct{}), done: make(chan struct{})}
+	go w.run() // ✅ OK when started from an explicit constructor
+	return w
+}
+```
+
+**Why:** `init()` functions should not spawn background goroutines. If a
+package requires background work, it must expose an object (for example a
+`Worker`) responsible for managing the goroutine's lifetime and providing a
+method such as `Close`, `Stop`, or `Shutdown` that signals the goroutine to
+stop and waits for it to exit. Spawning goroutines unconditionally from
+`init()` gives library users no control over lifecycle, resource usage, or
+shutdown ordering.
+
+**How the check works:**
+- AST-only check: flags `go` statements that appear directly inside `init()`.
+- SSA-enhanced detection: when SSA is available the analyzer follows static
+	callees reachable from `init()` (depth-limited BFS) to detect goroutine
+	creation performed indirectly by functions called from `init()`.
+
+**Scope & limitations:**
+- Scope: focuses on `init()` functions only. This keeps false positives low
+	and captures the most critical lifecycle violations.
+- SSA traversal follows only static callees discovered in SSA
+	(`StaticCallee()`); it does not handle interface dispatch, reflection, or
+	dynamically-constructed function values. A depth limit prevents costly
+	analyses but may miss very deep indirect goroutine starts.
+
+**Performance tradeoffs:**
+- The SSA-based interprocedural search improves detection across files and
+	packages at the cost of extra CPU/time. The analyzer uses a conservative
+	static-callee BFS (no pointer analysis) with a reasonable default depth to
+	balance precision and speed.
+
+**Suppressing:** Use `//nolint:goroutine_init` to suppress the check when an
+unavoidable goroutine must be started during package init (rare, and discouraged).
+
 ### `goroutine_forget` — Don't fire-and-forget goroutines
 
 **What it detects:**
