@@ -346,6 +346,19 @@ func TestImportAliasRule_MissingTrace(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[23], "testlintdata/import_alias_missing")
 }
 
+func TestImportGroupRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), analyzers[24], "testlintdata/import_group")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
