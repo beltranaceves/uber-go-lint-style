@@ -1,5 +1,8 @@
 ## Rules
 
+Note: These rules are enforced by the repository's linter plugin. If you use the Go language server (gopls) and rely on `gofmt` or `goimports` for formatting and import organization, you generally do not need to enable formatting- or import-related checks from this plugin. The rules below focus on style and correctness checks that go beyond automatic formatting.
+
+
 ### `todo` — Require author in TODO comments
 
 **What it detects:**
