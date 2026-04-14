@@ -7,6 +7,7 @@ import (
 
 	"github.com/golangci/plugin-module-register/register"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/analysistest"
 )
 
@@ -371,6 +372,29 @@ func TestInitRule(t *testing.T) {
 
 	// InitRule is appended after ImportAliasRule and before ImportGroupRule in plugin.go
 	analysistest.Run(t, testdataDir(t), analyzers[25], "testlintdata/init")
+}
+
+func TestMapInitRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// Find analyzer by name to avoid relying on fixed index
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "map_init" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "map_init analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/map_init")
 }
 
 func testdataDir(t *testing.T) string {

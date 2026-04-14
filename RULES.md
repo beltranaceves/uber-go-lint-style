@@ -139,6 +139,29 @@ for _, v := range src {
 **How the check works:**
 The analyzer records `make` calls that omit capacity and then scans loop bodies (range/for) for map index assignments or `append` calls that populate those containers; it reports at the original `make` site.
 
+### `map_init` — Initializing Maps
+
+**What it detects:**
+```go
+var m1 = map[T1]T2{}   // ❌ VIOLATION - empty composite literal
+
+m := map[string]int{}  // ❌ VIOLATION - empty composite literal
+
+// Good: use make for empty maps
+m2 := make(map[string]int)
+
+// Good: use map literal when initializing with a fixed set of elements
+m3 := map[string]int{
+	"a": 1,
+	"b": 2,
+}
+```
+
+**Why:** Using `make(...)` for empty maps makes declaration and initialization visually distinct and allows capacity hints to be provided when useful. When a map is initialized with a fixed set of elements, a map literal is clearer and more concise.
+
+**How the check works:**
+This AST-based analyzer flags map composite literals with zero elements (for example `map[T]U{}`) and reports a diagnostic recommending `make` for empty maps and map literals for fixed initial contents. It is intentionally conservative to avoid false positives; you can suppress it with `//nolint:map_init` for intentional exceptions.
+
 ### `container_copy` — Copy slices/maps at API boundaries
 
 **What it detects:**
