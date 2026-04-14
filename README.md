@@ -110,14 +110,14 @@ linters-settings:
       original-url: "github.com/beltranaceves/uber-go-lint-style"
 
 severity:
-	# Recommended: many rules are heuristic or subjective. Configure the
-	# plugin to report findings as warnings by default so suggestions are
-	# visible to developers without failing CI builds. Projects can opt-in
-	# to stricter settings per-team or per-rule as needed.
-	rules:
-		- linters:
-				- uber-go-lint-style
-			severity: warning
+    # Recommended: many rules are heuristic or subjective. Configure the
+    # plugin to report findings as warnings by default so suggestions are
+    # visible to developers without failing CI builds. Projects can opt-in
+    # to stricter settings per-team or per-rule as needed.
+    rules:
+    - linters:
+            - uber-go-lint-style
+            severity: warning
 ```
 
 **Step 3: Build the custom binary and run**
