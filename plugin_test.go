@@ -290,6 +290,20 @@ func TestGoroutineExitRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[20], "testlintdata/goroutine_exit")
 }
 
+func TestGoroutineForgetRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// GoroutineForgetRule was appended after GoroutineExitRule
+	analysistest.Run(t, testdataDir(t), analyzers[21], "testlintdata/goroutine_forget")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

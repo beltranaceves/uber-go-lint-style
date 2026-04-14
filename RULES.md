@@ -420,6 +420,73 @@ tests to exit before background work completes.
 goroutine without an obvious wait is intentional.
 
 
+### `goroutine_forget` — Don't fire-and-forget goroutines
+
+**What it detects:**
+```go
+func bad() {
+	go func() {
+		for { // ❌ VIOLATION - infinite loop with no stop
+			doWork()
+		}
+	}()
+}
+
+func badTrue() {
+	go func() {
+		for true { // ❌ VIOLATION - infinite loop
+			doWork()
+		}
+	}()
+}
+
+func badNamed() {
+	go worker() // ❌ VIOLATION - worker contains an infinite loop
+}
+func worker() {
+	for { doWork() }
+}
+```
+
+**Good:** Use stop signalling and a way to wait for the goroutine to exit.
+```go
+stop := make(chan struct{})
+done := make(chan struct{})
+go func() {
+	defer close(done)
+	for {
+		select {
+		case <-stop:
+			return
+		default:
+			doWork()
+		}
+	}
+}()
+close(stop)
+<-done
+```
+
+**Why:** Goroutines with unmanaged lifetimes can leak resources, hold
+references that prevent GC, and cause background work to run beyond the
+intended lifetime. Testing for leaks at runtime is best practice — use
+go.uber.org/goleak in package tests to catch goroutine leaks.
+
+**How the check works:**
+- AST-based heuristics look for `go` statements that start anonymous function
+  literals or simple named functions whose bodies (in the same file) contain
+  likely-infinite loops such as `for {}` or `for true {}`.
+- The analyzer ignores loops that include a `select` with a receive case
+  that returns from the goroutine (a common stop pattern), reducing false
+  positives.
+- This is intentionally conservative and uses syntactic heuristics; it may
+  not cover all leak patterns (function calls in other files, complex
+  conditions, or indirect stop signals).
+
+**Suppressing:** Use `//nolint:goroutine_forget` for intentional cases.
+
+
+
 ### `function_order` — Group and order functions for readability
 
 **What it detects:**
