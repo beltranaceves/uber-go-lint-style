@@ -340,6 +340,86 @@ outside of the `main` function in package `main`. Files ending in `_test.go`
 are ignored. Suppress with `//nolint:exit_main` when termination from a helper
 is intentional.
 
+### `goroutine_exit` — Wait for goroutines spawned by entrypoints
+
+**What it detects:**
+
+Bad:
+
+```go
+func main() {
+		go func() {}() // ❌ VIOLATION - no visible wait
+}
+
+func TestMain(m *testing.M) {
+		go func() {}() // ❌ VIOLATION - no visible wait
+		os.Exit(m.Run())
+}
+```
+
+Good:
+
+```go
+func main() {
+		done := make(chan struct{})
+		go func() {
+				defer close(done)
+		}()
+		<-done // ✅ OK - main waits for goroutine
+}
+
+func init() {
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() { defer wg.Done() }()
+		wg.Wait() // ✅ OK - init waits for goroutine
+}
+```
+
+**Why:** Goroutines started directly from system-managed entrypoints (for
+example `main()`, `init()`, or `TestMain`) have no caller that can join or wait
+for them. Forgetting to synchronize such goroutines can cause the process or
+tests to exit before background work completes.
+
+**How the check works:**
+- The rule is conservative by default and restricts analysis to entrypoints
+	(`main`, `init`, `TestMain`) where missing waits are most likely to be
+	problematic and easiest to reason about.
+- It uses a layered approach for detection:
+	- Lightweight AST/type heuristics: look for `go` statements in the entry
+		function and nearby evidence of waiting in the same body (`wg.Wait()`,
+		`close(...)` + receive, or direct `<-ch` expressions).
+	- SSA-based interprocedural search: when SSA is available (via the
+		`buildssa` pass) the analyzer finds `go` instructions and follows static
+		callees (a depth-limited BFS) to detect whether control can reach a
+		`sync.WaitGroup.Wait` method. This interprocedural traversal has a
+		configurable depth limit (default 10) to avoid unbounded and expensive
+		exploration.
+
+**Scope & limitations:**
+- Scope: by default checks only `main`, `init`, and `TestMain`. This keeps
+	false positives low while catching the highest-risk omissions.
+- SSA traversal follows only static callees discovered in SSA
+	(`StaticCallee()`). It improves detection across packages for many common
+	patterns but does not handle all indirect callsites (interface dispatch,
+	reflection, or function-valued calls resolved via pointer analysis).
+- The depth limit prevents worst-case performance on large callgraphs but may
+	miss waits beyond that depth. You can increase the limit or enable pointer
+	analysis for better precision at the cost of runtime.
+- The rule still uses simple channel/`close`/receive heuristics to cover
+	patterns where WaitGroup isn't used.
+
+**Performance tradeoffs:**
+- SSA and call-following improve accuracy but cost CPU/time. The analyzer
+	avoids running heavy pointer-based callgraph analysis by default and uses a
+	static-callee BFS with a depth limit. If you need full pointer-aware
+	callgraphs, the analyzer can be extended to run `golang.org/x/tools/go/pointer`
+	analysis in an opt-in mode (slower, but more complete).
+
+**Suppressing:** Use `//nolint:goroutine_exit` to skip a specific site where a
+goroutine without an obvious wait is intentional.
+
+
 ### `function_order` — Group and order functions for readability
 
 **What it detects:**
