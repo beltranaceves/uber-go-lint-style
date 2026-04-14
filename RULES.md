@@ -201,6 +201,28 @@ defer f.Close()
 **How the check works:**
 The analyzer looks for selector calls named `Unlock`, `RUnlock`, or `Close` and reports those that are not directly used in a `defer` statement. It is conservative and may produce false positives in intentional manual-cleanup patterns (for example, unlocking inside tight loops); such cases can be suppressed with `//nolint:defer_clean`.
 
+### `import_alias` — Import aliasing rules
+
+**What it detects:**
+```go
+import "example.com/client-go" // ❌ VIOLATION - package name 'client' != last path element 'client-go' without alias
+
+import runtimetrace "runtime/trace" // ❌ VIOLATION - unnecessary alias when package name matches last path element ('trace') and there is no conflict
+```
+
+**Why:**
+Import aliases should be used when the package's declared name does not match the last element of its import path (for clarity and correct identifier resolution). In all other cases, aliases should be avoided unless there is a direct conflict between imports, because redundant aliases make code noisier and harder to read.
+
+**How the check works:**
+The analyzer inspects import declarations and the package's declared name for each import. It reports:
+
+- Missing alias: when the package's declared name (from the compiled package metadata or by convention) differs from the last path element, the analyzer requires an explicit alias that matches the declared name.
+- Unnecessary alias: when an import uses an explicit alias but the declared package name equals the last path element and there is no collision with other imports, the analyzer flags the alias as redundant.
+
+The check ignores blank (`_`) and dot (`.`) imports. It is conservative about alias suppression when multiple imports would share the same default package name (in that case aliases may be required to disambiguate).
+
+**Suppressing:** Use `//nolint:import_alias` to suppress specific cases where an alias is intentionally used or the rule is not applicable.
+
 ### `else_unnecessary` — Avoid unnecessary `else` when both branches set the same variable
 
 **What it detects:**

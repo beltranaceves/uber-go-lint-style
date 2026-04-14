@@ -318,6 +318,20 @@ func TestGoroutineInitRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[22], "testlintdata/goroutine_init")
 }
 
+func TestImportAliasRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// ImportAliasRule was appended at the end of the analyzers list
+	analysistest.Run(t, testdataDir(t), analyzers[23], "testlintdata/import_alias")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
