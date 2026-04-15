@@ -3,6 +3,9 @@ package linters
 import (
 	"testing"
 
+	// Import plugin package for its init() registration side-effects.
+	_ "github.com/beltranaceves/uber-go-lint-style"
+
 	"github.com/golangci/plugin-module-register/register"
 	"github.com/stretchr/testify/require"
 )
