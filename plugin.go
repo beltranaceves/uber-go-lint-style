@@ -99,6 +99,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.ImportGroupRule{}).BuildAnalyzer(),
 		(&rules.InitRule{}).BuildAnalyzer(),
 		(&rules.MapInitRule{}).BuildAnalyzer(),
+		(&rules.InterfaceComplianceRule{}).BuildAnalyzer(),
 	}
 
 	var out []*analysis.Analyzer

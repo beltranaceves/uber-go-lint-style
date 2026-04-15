@@ -13,6 +13,48 @@ Note: These rules are enforced by the repository's linter plugin. If you use the
 // TODO(alice): fix this  // ✅ OK - has author
 ```
 
+### `interface_compliance` — Verify interface compliance at compile time
+
+**What it detects:**
+```go
+type Handler struct {}
+
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+		// ...
+}
+
+// ❌ VIOLATION: package lacks a compile-time assertion
+```
+
+**Correct usage:**
+```go
+type Handler struct {}
+
+var _ http.Handler = (*Handler)(nil)
+
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+		// ...
+}
+```
+
+**Why:**
+Adding a compile-time assertion such as `var _ pkg.Interface = (*T)(nil)` will fail
+to compile if `T` ever stops matching the interface. This protects API contracts
+and prevents accidental breakage when refactoring.
+
+**How the check works:**
+- The analyzer looks for exported named types in the package that implement
+	common interfaces (for example `fmt.Stringer`, `net/http.Handler`).
+- If a type implements such an interface but the package does not contain a
+	corresponding `var _ Interface = (*Type)(nil)` assertion, the analyzer
+	reports a diagnostic recommending adding one.
+- The rule uses type information (`pass.TypesInfo`) and the `inspect` pass and
+	runs under the plugin's `LoadModeTypesInfo`.
+
+**Suppressing:** Use `//nolint:interface_compliance` to silence the check
+when an assertion is intentionally omitted.
+
+
 **Why:** Unattributed TODOs can be lost or unmaintained. Requiring an author ensures accountability and provides context for future developers.
 
 ### `atomic` — Use go.uber.org/atomic for raw types
