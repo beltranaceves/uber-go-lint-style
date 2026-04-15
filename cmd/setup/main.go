@@ -28,6 +28,9 @@ linters-settings:
       type: "module"
       description: "Uber Go style guide linter"
       original-url: "github.com/beltranaceves/uber-go-lint-style"
+			# Disabled rules provided as YAML text. By default exclude TodoRule.
+			disabled_rules_yaml: |
+				- TodoRule
 
 severity:
   default-severity: error

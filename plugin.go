@@ -3,6 +3,7 @@ package linters
 import (
 	"github.com/golangci/plugin-module-register/register"
 	"golang.org/x/tools/go/analysis"
+	"gopkg.in/yaml.v3"
 
 	"github.com/beltranaceves/uber-go-lint-style/rules"
 )
@@ -15,6 +16,10 @@ type MySettings struct {
 	One   string    `json:"one"`
 	Two   []Element `json:"two"`
 	Three Element   `json:"three"`
+	// DisabledRulesYAML: YAML content listing rules to disable. Accepts either
+	// a top-level YAML list (e.g. `- TodoRule`) or a mapping like
+	// `disabled: [TodoRule, AtomicRule]`.
+	DisabledRulesYAML string `json:"disabled_rules_yaml"`
 }
 
 type Element struct {
@@ -22,7 +27,8 @@ type Element struct {
 }
 
 type PluginExample struct {
-	settings MySettings
+	settings      MySettings
+	disabledRules map[string]bool
 }
 
 func New(settings any) (register.LinterPlugin, error) {
@@ -34,11 +40,38 @@ func New(settings any) (register.LinterPlugin, error) {
 		return nil, err
 	}
 
-	return &PluginExample{settings: s}, nil
+	// Parse YAML-based disabled rules (if provided).
+	disabled := make(map[string]bool)
+	if s.DisabledRulesYAML != "" {
+		// Try to unmarshal as a simple list first.
+		var list []string
+		if err := yaml.Unmarshal([]byte(s.DisabledRulesYAML), &list); err == nil && len(list) > 0 {
+			for _, name := range list {
+				disabled[name] = true
+			}
+		} else {
+			// Try to unmarshal as a map, e.g. {disabled: [...]} or {disable: [...]}.
+			var m map[string][]string
+			if err := yaml.Unmarshal([]byte(s.DisabledRulesYAML), &m); err == nil {
+				if arr, ok := m["disabled"]; ok {
+					for _, name := range arr {
+						disabled[name] = true
+					}
+				}
+				if arr, ok := m["disable"]; ok {
+					for _, name := range arr {
+						disabled[name] = true
+					}
+				}
+			}
+		}
+	}
+
+	return &PluginExample{settings: s, disabledRules: disabled}, nil
 }
 
 func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
-	return []*analysis.Analyzer{
+	candidates := []*analysis.Analyzer{
 		(&rules.TodoRule{}).BuildAnalyzer(),
 		(&rules.AtomicRule{}).BuildAnalyzer(),
 		(&rules.BuiltinNameRule{}).BuildAnalyzer(),
@@ -66,7 +99,19 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.ImportGroupRule{}).BuildAnalyzer(),
 		(&rules.InitRule{}).BuildAnalyzer(),
 		(&rules.MapInitRule{}).BuildAnalyzer(),
-	}, nil
+	}
+
+	var out []*analysis.Analyzer
+	for _, a := range candidates {
+		if a == nil {
+			continue
+		}
+		if f.disabledRules != nil && f.disabledRules[a.Name] {
+			continue
+		}
+		out = append(out, a)
+	}
+	return out, nil
 }
 
 func (f *PluginExample) GetLoadMode() string {
