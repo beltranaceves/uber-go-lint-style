@@ -443,6 +443,28 @@ func TestInterfacePointerRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), a, "testlintdata/interface_pointer")
 }
 
+func TestInterfaceReceiverRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "interface_receiver" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "interface_receiver analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/interface_receiver")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

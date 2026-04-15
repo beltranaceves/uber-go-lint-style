@@ -832,3 +832,43 @@ adding new options, and can make defaults and configuration clearer to callers.
 **Suppressing:** Use `//nolint:functional_option` to opt out for specific
 cases where the pattern is undesirable.
 
+### `interface_receiver` — Method values capture the receiver
+
+**What it detects:**
+```go
+type T struct{ v int }
+func (t T) Mv() int { return t.v }
+func (t *T) Mp() {}
+
+t := T{v: 1}
+f := t.Mv    // ❌ VIOLATION - taking a method value captures the receiver by value
+
+p := &T{v: 2}
+g := p.Mp    // ❌ VIOLATION - taking a method value captures the receiver (pointer) at evaluation time
+
+// method calls are not flagged
+t.Mv()
+p.Mp()
+```
+
+**Why:**
+Taking a method value evaluates and saves the receiver at the moment the
+method value is formed. Subsequent mutations to the original value or the
+pointee (for pointer receivers) do not affect the stored receiver. This can
+lead to surprises when callers expect later mutations to be observed by calls
+to the saved function value.
+
+**How the check works:**
+- Uses type information (`pass.TypesInfo`) and `pass.TypesInfo.Selections` to
+	find `SelectorExpr` nodes whose selection `Kind()` is `types.MethodVal`.
+- Skips ordinary method calls (where the selector is the `Fun` of a
+	`CallExpr`) and method expressions (`T.M`).
+- Reports a diagnostic at the selector site with a message that explains
+	whether the captured receiver is a value or a pointer, helping developers
+	decide if a closure or explicit function literal is more appropriate.
+- Runs under the plugin's `LoadModeTypesInfo` because it requires type
+	resolution.
+
+**Suppressing:** Use `//nolint:interface_receiver` to silence reports when
+taking a method value is intentional.
+
