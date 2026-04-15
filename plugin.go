@@ -102,6 +102,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.InterfaceReceiverRule{}).BuildAnalyzer(),
 		(&rules.InterfaceComplianceRule{}).BuildAnalyzer(),
 		(&rules.InterfacePointerRule{}).BuildAnalyzer(),
+		(&rules.LineLengthRule{}).BuildAnalyzer(),
 	}
 
 	var out []*analysis.Analyzer

@@ -465,6 +465,28 @@ func TestInterfaceReceiverRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), a, "testlintdata/interface_receiver")
 }
 
+func TestLineLengthRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "line_length" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "line_length analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/line_length")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

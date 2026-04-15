@@ -14,6 +14,23 @@ Note: These rules are enforced by the repository's linter plugin. If you use the
 ```
 
 **Why:** Unattributed TODOs can be lost or unmaintained. Requiring an author ensures accountability and provides context for future developers.
+### `line_length` — Avoid overly long lines
+
+**What it detects:**
+```go
+// This comment is intentionally longer than the recommended 99-character soft limit and should be flagged by the linter.
+// long code line: var s = "..."
+```
+
+**Why:** Long lines reduce readability and require horizontal scrolling in many editors and diffs. A soft limit helps keep code and comments compact and easier to scan.
+
+**How the check works:**
+- The analyzer counts Unicode runes per source line and reports a diagnostic for lines exceeding 99 characters (soft limit).
+- This is a stylistic, best-effort check; it examines source file text and reports violations conservatively to avoid false positives.
+
+**Disabled by default:**
+Because line length is a subjective, stylistic preference that may vary by project, this rule is disabled by default. Enable it explicitly in your plugin configuration when you want the repository to enforce the soft 99-character limit. Use `//nolint:line_length` to suppress individual lines or files when the long line is intentional.
+
 ### `interface_compliance` — Verify interface compliance at compile time
 
 
