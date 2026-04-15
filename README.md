@@ -304,5 +304,6 @@ This project implements style rules from [Uber's Go Style Guide](https://github.
 - [golangci-lint plugins](https://golangci-lint.run/docs/plugins/plugins-configuration/) — Custom plugin documentation
 - Analysis tools:
   - [go/analysis](https://pkg.go.dev/golang.org/x/tools/go/analysis)
+  - [golang.org/x/tools/go/ssa](https://pkg.go.dev/golang.org/x/tools/go/ssa)
   - [go/ast](https://pkg.go.dev/go/ast)
   - [go/types](https://pkg.go.dev/go/types)
