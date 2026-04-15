@@ -398,6 +398,36 @@ const (
 **Why:** Starting enumerations at 1 prevents the zero value from being a valid enum member by accident. The zero value is the default for uninitialized variables; reserving zero as an invalid or sentinel value avoids subtle bugs where the zero value accidentally matches a meaningful enum variant.
 
 **How the check works:**
+
+### `mutex_zero_value` — Zero-value Mutexes are Valid
+
+**What it detects:**
+```go
+mu := new(sync.Mutex)        // ❌ VIOLATION - pointer to mutex
+var p *sync.Mutex           // ❌ VIOLATION - pointer to mutex
+
+type SMap struct {
+	sync.Mutex              // ❌ VIOLATION - embedded mutex
+	data map[string]string
+}
+
+// GOOD
+var mu sync.Mutex
+type GoodSMap struct {
+	mu   sync.Mutex
+	data map[string]string
+}
+```
+
+**Why:**
+The zero-value of `sync.Mutex` and `sync.RWMutex` is valid and preferred. Pointers to mutexes are unnecessary and embedding a mutex as an anonymous field exposes the `Lock`/`Unlock` methods on the containing type's API.
+
+**How the check works:**
+- Uses type information (`pass.TypesInfo`) to detect pointer types whose element is `sync.Mutex` or `sync.RWMutex` (for example `*sync.Mutex`, `new(sync.Mutex)`, or `&sync.Mutex{}`).
+- Inspects struct type fields and reports anonymous (embedded) fields whose resolved type is `sync.Mutex`/`sync.RWMutex`.
+- Reports diagnostics at the declaration site with actionable messages recommending the zero-value or a named field (for example `mu sync.Mutex`).
+
+**Suppressing:** Use `//nolint:mutex_zero_value` to suppress specific cases where a pointer or embedding is intentional.
 - It inspects top-level `const` groups that use `iota` and are associated with a named integer type (e.g., `type T int`).
 - If the first enumerator in the group evaluates to `0` (either implicitly via no initializer or explicitly via `iota`, `0`, or `iota + 0`), the analyzer reports a diagnostic recommending starting the enum at `1` (for example, by using `iota + 1` or adding an explicit `Unknown`/`Unset` sentinel at zero).
 

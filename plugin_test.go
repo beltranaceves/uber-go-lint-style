@@ -487,6 +487,28 @@ func TestLineLengthRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), a, "testlintdata/line_length")
 }
 
+func TestMutexZeroValueRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "mutex_zero_value" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "mutex_zero_value analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/mutex_zero_value")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

@@ -103,6 +103,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.InterfaceComplianceRule{}).BuildAnalyzer(),
 		(&rules.InterfacePointerRule{}).BuildAnalyzer(),
 		(&rules.LineLengthRule{}).BuildAnalyzer(),
+		(&rules.MutexZeroValueRule{}).BuildAnalyzer(),
 	}
 
 	var out []*analysis.Analyzer
