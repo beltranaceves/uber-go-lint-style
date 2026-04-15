@@ -420,6 +420,29 @@ func TestInterfaceComplianceRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), a, "testlintdata/interface_compliance")
 }
 
+func TestInterfacePointerRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// Find analyzer by name to avoid relying on fixed index
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "interface_pointer" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "interface_pointer analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/interface_pointer")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

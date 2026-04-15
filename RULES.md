@@ -13,7 +13,9 @@ Note: These rules are enforced by the repository's linter plugin. If you use the
 // TODO(alice): fix this  // ✅ OK - has author
 ```
 
+**Why:** Unattributed TODOs can be lost or unmaintained. Requiring an author ensures accountability and provides context for future developers.
 ### `interface_compliance` — Verify interface compliance at compile time
+
 
 **What it detects:**
 ```go
@@ -54,8 +56,38 @@ and prevents accidental breakage when refactoring.
 **Suppressing:** Use `//nolint:interface_compliance` to silence the check
 when an assertion is intentionally omitted.
 
+### `interface_pointer` — Avoid pointers to interface types
 
-**Why:** Unattributed TODOs can be lost or unmaintained. Requiring an author ensures accountability and provides context for future developers.
+**What it detects:**
+```go
+func Foo(r *io.Reader) {}        // ❌ VIOLATION - pointer to interface
+type T struct { R *io.Reader }   // ❌ VIOLATION - pointer to interface field
+var g *io.Reader                // ❌ VIOLATION - package-level pointer-to-interface
+```
+
+**Why:**
+Pointers to interfaces are almost always unnecessary. An interface value
+already contains a pointer to the dynamic value (if the concrete value is a
+pointer) and to its type information. Passing an interface value by value is
+the idiomatic and correct approach. If you need methods to mutate the
+underlying concrete value, implement pointer receivers on the concrete type
+instead of using a pointer to the interface.
+
+**How the check works:**
+- Uses type information (`pass.TypesInfo`) to detect pointer types whose
+	element's underlying type is an `interface`. Reports the diagnostic at the
+	pointer expression (the `*`) with the message: "pointer to interface is
+	unnecessary; pass the interface value instead".
+- Runs under `LoadModeTypesInfo` because it relies on type resolution.
+- Conservative: pointers to concrete types (for example `*bytes.Buffer`)
+	are allowed and not flagged.
+
+**Disabled by default:**
+Because the precise set of acceptable vs unacceptable pointer-to-interface
+patterns is context-dependent and not fully characterised for all codebases,
+this rule is disabled by default. Enable it explicitly in your plugin
+configuration when you opt into this style policy.
+
 
 ### `atomic` — Use go.uber.org/atomic for raw types
 
