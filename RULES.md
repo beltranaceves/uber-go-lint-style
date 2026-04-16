@@ -14,6 +14,58 @@ Note: These rules are enforced by the repository's linter plugin. If you use the
 ```
 
 **Why:** Unattributed TODOs can be lost or unmaintained. Requiring an author ensures accountability and provides context for future developers.
+### `param_naked` — Avoid naked parameters
+
+**What it detects:**
+```go
+// func printInfo(name string, isLocal, done bool)
+
+printInfo("foo", true, true) // ❌ VIOLATION - naked boolean parameters
+```
+
+**Good:**
+```go
+// func printInfo(name string, isLocal, done bool)
+
+printInfo("foo", true /* isLocal */, true /* done */)
+```
+
+Better: replace naked `bool` parameters with named types for clarity and
+future extensibility:
+
+```go
+type Region int
+
+const (
+	UnknownRegion Region = iota
+	Local
+)
+
+type Status int
+
+const (
+	StatusReady Status = iota + 1
+	StatusDone
+)
+
+func printInfo(name string, region Region, status Status)
+```
+
+**Why:** Naked parameters (especially boolean literals) reduce call-site
+readability — it's unclear what `true` or `false` means without looking up the
+function signature. An inline C-style comment (`/* name */`) or a small
+named type improves readability and future-proofs the API.
+
+**How the check works:**
+- Runs with type information (`LoadModeTypesInfo`).
+- The analyzer inspects call expressions, resolves the callee signature via
+	`pass.TypesInfo`, and reports diagnostics for boolean literal arguments
+	passed to `bool` parameters unless the argument is annotated with a same-line
+	inline comment. It is conservative to avoid false positives.
+
+**Suppressing:** Use `//nolint:param_naked` to silence the check for
+intentional or exceptional call sites.
+
 ### `line_length` — Avoid overly long lines
 
 **What it detects:**

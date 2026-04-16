@@ -7,12 +7,12 @@ import (
 
 // BAD: pointer to named interface in parameter
 func BadParam(r *io.Reader) { // want "pointer to interface is unnecessary; pass the interface value instead"
-    _ = r
+	_ = r
 }
 
 // BAD: pointer to interface field
 type BadStruct struct {
-    R *io.Reader // want "pointer to interface is unnecessary; pass the interface value instead"
+	R *io.Reader // want "pointer to interface is unnecessary; pass the interface value instead"
 }
 
 // BAD: var declaration
@@ -20,11 +20,11 @@ var GlobalReader *io.Reader // want "pointer to interface is unnecessary; pass t
 
 // GOOD: interface value
 func GoodParam(r io.Reader) {
-    _ = r
+	_ = r
 }
 
 type GoodStruct struct {
-    R io.Reader
+	R io.Reader
 }
 
 // GOOD: pointer to concrete type that implements io.Reader

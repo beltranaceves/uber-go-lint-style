@@ -581,6 +581,28 @@ func TestNoPanicRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), a, "testlintdata/panic/good")
 }
 
+func TestParamNakedRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "param_naked" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "param_naked analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/param_naked")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

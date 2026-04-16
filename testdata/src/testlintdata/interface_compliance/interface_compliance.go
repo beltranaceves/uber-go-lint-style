@@ -9,7 +9,7 @@ import (
 type BadStringer struct{} // want "exported type 'BadStringer' implements Stringer"
 
 func (BadStringer) String() string {
-    return fmt.Sprintf("bad")
+	return fmt.Sprintf("bad")
 }
 
 // GOOD: compile-time assertion present
