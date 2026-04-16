@@ -16,6 +16,9 @@ type MySettings struct {
 	One   string    `json:"one"`
 	Two   []Element `json:"two"`
 	Three Element   `json:"three"`
+	// NestLessMaxDepth controls the maximum allowed nesting depth for the
+	// `nest_less` rule. If 0, the rule defaults to 3.
+	NestLessMaxDepth int `json:"nest_less_max_depth"`
 	// DisabledRulesYAML: YAML content listing rules to disable. Accepts either
 	// a top-level YAML list (e.g. `- TodoRule`) or a mapping like
 	// `disabled: [TodoRule, AtomicRule]`.
@@ -103,6 +106,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.InterfaceComplianceRule{}).BuildAnalyzer(),
 		(&rules.InterfacePointerRule{}).BuildAnalyzer(),
 		(&rules.LineLengthRule{}).BuildAnalyzer(),
+		(&rules.NestLessRule{MaxDepth: f.settings.NestLessMaxDepth}).BuildAnalyzer(),
 		(&rules.MutexZeroValueRule{}).BuildAnalyzer(),
 	}
 

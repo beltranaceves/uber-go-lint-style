@@ -31,6 +31,53 @@ Note: These rules are enforced by the repository's linter plugin. If you use the
 **Disabled by default:**
 Because line length is a subjective, stylistic preference that may vary by project, this rule is disabled by default. Enable it explicitly in your plugin configuration when you want the repository to enforce the soft 99-character limit. Use `//nolint:line_length` to suppress individual lines or files when the long line is intentional.
 
+### `nest_less` — Reduce nesting depth in functions
+
+**What it detects:**
+```go
+if cond1 {
+		if cond2 {
+				if cond3 {
+						if cond4 {
+								// ❌ VIOLATION - nesting too deep
+						}
+				}
+		}
+}
+```
+
+**Good:** handle special cases early and return/continue to keep indentation shallow
+```go
+if !cond1 { return }
+if !cond2 { return }
+if !cond3 { return }
+if !cond4 { return }
+// ✅ OK - shallow control flow
+```
+
+**Why:** Deeply nested code is harder to read and reason about. Handling
+error cases and special conditions early (early returns or `continue`) keeps
+the main execution path flat and easier to follow.
+
+**How the check works:**
+- The analyzer walks function bodies and counts nesting levels for control
+	structures (`if`, `for`, `range`, `switch`, `select`). When the nesting
+	depth exceeds the configured threshold, the analyzer reports a diagnostic
+	at the control statement encouraging an early return or `continue`.
+
+**Configuration:**
+- The plugin exposes `nest_less_max_depth` in the plugin settings (defaults
+	to `3` when not set). For example in `.golangci.yml` you can set:
+
+```yaml
+linters-settings:
+	uber-go-lint-style:
+		nest_less_max_depth: 4
+```
+
+**Suppressing:** Use `//nolint:nest_less` to ignore a specific site where
+deep nesting is intentional.
+
 ### `interface_compliance` — Verify interface compliance at compile time
 
 

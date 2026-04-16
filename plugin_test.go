@@ -509,6 +509,28 @@ func TestMutexZeroValueRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), a, "testlintdata/mutex_zero_value")
 }
 
+func TestNestLessRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "nest_less" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "nest_less analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/nest_less")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 
