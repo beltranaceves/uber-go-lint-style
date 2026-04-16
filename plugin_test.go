@@ -558,6 +558,29 @@ func TestPackageNameRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), a, "testlintdata/package_name/good")
 }
 
+func TestNoPanicRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "panic" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "panic analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/panic/bad")
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/panic/good")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

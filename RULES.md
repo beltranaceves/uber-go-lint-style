@@ -213,6 +213,30 @@ Package names are visible at every call site and should be concise, unambiguous,
 
 **Suppressing:** Use `//nolint:package_name` to silence the check in justified cases (for example when a plural or otherwise unusual package name is required by an external convention).
 
+### `panic` — Don't panic in normal code
+
+**What it detects:**
+```go
+panic("boom")            // ❌ VIOLATION - explicit panic in normal code
+func Do() {
+	go func() { panic("x") }() // ❌ VIOLATION - panics inside anonymous functions in non-init contexts
+}
+
+func init() {
+	panic("allowed in init")  // ✅ OK - allowed during program initialization
+}
+```
+
+**Why:**
+Panics are not a general error-handling strategy and can cause cascading failures in production. Functions should return errors so callers can decide how to handle them. Panics may be acceptable during initialization for fatal startup failures or in generated/test-only code; prefer `t.Fatal` in tests.
+
+**How the check works:**
+- AST-based analyzer that flags explicit calls to the built-in `panic()` function.
+- The rule reports diagnostics for `panic` calls that occur in ordinary functions or in anonymous functions executed from ordinary functions. Panics found inside top-level `init()` functions (including anonymous functions executed by `init`) are allowed.
+- The analyzer is intentionally conservative to avoid false positives and can be suppressed with `//nolint:panic` where a panic is deliberate.
+
+**Suppressing:** Use `//nolint:panic` to silence the check when a panic is intentional (for example minimal initialization code that must abort during startup).
+
 
 ### `global_decl` — Top-level Variable Declarations
 
