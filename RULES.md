@@ -191,6 +191,29 @@ type T struct {
 **How the check works:**
 The analyzer dynamically retrieves predeclared identifiers from `go/types.Universe` and inspects `GenDecl`, function parameters/receivers, and struct fields via the AST to report shadowing occurrences.
 
+### `package_name` — Package naming conventions
+
+**What it detects:**
+```go
+package BadName // ❌ VIOLATION - contains upper-case letters
+package bad_pkg  // ❌ VIOLATION - contains underscore
+package common   // ❌ VIOLATION - discouraged generic name
+package widgets  // ❌ VIOLATION - plural form discouraged
+```
+
+**Why:**
+Package names are visible at every call site and should be concise, unambiguous, and follow Go conventions: lower-case, no underscores, singular, and not generic (for example `common`, `util`, `shared`, or `lib` are discouraged). Clear package names improve readability and make imports easier to reason about.
+
+**How the check works:**
+- AST-based analyzer that inspects the package clause and reports diagnostics when the package identifier:
+	- contains upper-case letters or underscores,
+	- matches a discouraged generic name (`common`, `util`, `shared`, `lib`), or
+	- appears to be plural (naive heuristic: ends with `s`).
+- The rule reports at the package declaration and is intentionally conservative; it uses simple, fast checks to avoid surprising false positives.
+
+**Suppressing:** Use `//nolint:package_name` to silence the check in justified cases (for example when a plural or otherwise unusual package name is required by an external convention).
+
+
 ### `global_decl` — Top-level Variable Declarations
 
 **What it detects:**

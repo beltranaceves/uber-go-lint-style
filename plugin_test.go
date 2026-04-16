@@ -531,6 +531,33 @@ func TestNestLessRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), a, "testlintdata/nest_less")
 }
 
+func TestPackageNameRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "package_name" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "package_name analyzer not found")
+
+	// Run against each package-case subdirectory so each package can have its own package clause.
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/package_name/bad_upper")
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/package_name/bad_underscore")
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/package_name/bad_common")
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/package_name/bad_plural")
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/package_name/good")
+}
+
 func testdataDir(t *testing.T) string {
 	t.Helper()
 

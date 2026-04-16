@@ -108,6 +108,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.LineLengthRule{}).BuildAnalyzer(),
 		(&rules.NestLessRule{MaxDepth: f.settings.NestLessMaxDepth}).BuildAnalyzer(),
 		(&rules.MutexZeroValueRule{}).BuildAnalyzer(),
+		(&rules.PackageNameRule{}).BuildAnalyzer(),
 	}
 
 	var out []*analysis.Analyzer
