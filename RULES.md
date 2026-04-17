@@ -399,6 +399,33 @@ m3 := map[string]int{
 **How the check works:**
 This AST-based analyzer flags map composite literals with zero elements (for example `map[T]U{}`) and reports a diagnostic recommending `make` for empty maps and map literals for fixed initial contents. It is intentionally conservative to avoid false positives; you can suppress it with `//nolint:map_init` for intentional exceptions.
 
+### `printf_const` — Prefer `const` format strings for Printf-style calls
+
+**What it detects:**
+```go
+msg := "unexpected values %v, %v\n"
+fmt.Printf(msg, 1, 2) // ❌ VIOLATION - format string is not a const
+```
+
+**Good:**
+```go
+const msg = "unexpected values %v, %v\n"
+fmt.Printf(msg, 1, 2) // ✅ OK - format string is a const
+
+fmt.Printf("ok %v\n", v) // ✅ OK - literal format
+```
+
+**Why:**
+Using a `const` for format strings enables `go vet` and other static tools to analyze format specifiers reliably. Non-constant format values reduce the ability of tooling to catch mismatches between format verbs and argument types.
+
+**How the check works:**
+- The analyzer inspects call expressions and resolves selectors via `pass.TypesInfo`.
+- It looks for common `fmt` functions (`Printf`, `Sprintf`, `Errorf`, `Fprintf`) and checks the argument that serves as the format string.
+- If the format argument is an identifier, the analyzer verifies whether that identifier refers to a `const`; if not, it reports a diagnostic at the identifier position.
+- Literal string operands are allowed and do not trigger the rule.
+
+**Suppressing:** Use `//nolint:printf_const` to silence the check for specific sites where a non-`const` format is intentional.
+
 ### `container_copy` — Copy slices/maps at API boundaries
 
 **What it detects:**

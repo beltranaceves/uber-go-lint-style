@@ -111,6 +111,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.MutexZeroValueRule{}).BuildAnalyzer(),
 		(&rules.PackageNameRule{}).BuildAnalyzer(),
 		(&rules.NoPanicRule{}).BuildAnalyzer(),
+		(&rules.PrintfConstRule{}).BuildAnalyzer(),
 	}
 
 	var out []*analysis.Analyzer
