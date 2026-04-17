@@ -191,6 +191,19 @@ func TestStructFieldZeroRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "struct_field_zero"), "testlintdata/struct_field_zero")
 }
 
+func TestStructPointerRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "struct_pointer"), "testlintdata/struct_pointer")
+}
+
 func TestEnumStartRule(t *testing.T) {
 	newPlugin, err := register.GetPlugin("uber-go-lint-style")
 	require.NoError(t, err)

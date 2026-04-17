@@ -400,6 +400,34 @@ package's public API. Exported package-level errors initialized with
 Note: exporting error variables or types makes them part of the package's
 public API — choose the form that best supports matching and error handling.
 
+### `struct_pointer` — Prefer `&T` over `new(T)` for struct pointers
+
+**What it detects:**
+```go
+type T struct{ Name string }
+
+// ❌ VIOLATION
+sptr := new(T)
+
+// ✅ OK
+sptr := &T{Name: "bar"}
+
+// Note: `new(int)` and pointers to non-struct types are allowed.
+```
+
+**Why:**
+Using `&T{...}` for struct pointers keeps initialization consistent with
+value literals and allows you to initialize fields in a single expression.
+It is clearer than allocating with `new(T)` and assigning fields afterwards.
+
+**How the check works:**
+- Uses type information (`pass.TypesInfo`) to detect `new(T)` calls whose
+	target type is a struct. Reports a diagnostic at the `new(...)` call site
+	recommending `&T{...}` instead. Runs under `LoadModeTypesInfo`.
+
+**Suppressing:** Use `//nolint:struct_pointer` to silence the check for
+intentional sites where `new(T)` is preferred.
+
 
 ### `channel_size` — Prefer unbuffered or size one channels
 
