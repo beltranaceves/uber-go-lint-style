@@ -998,6 +998,44 @@ tests to exit before background work completes.
 - The rule still uses simple channel/`close`/receive heuristics to cover
 	patterns where WaitGroup isn't used.
 
+### `struct_field_key` — Require field names in struct literals
+
+**What it detects:**
+```go
+_ = User{"John", "Doe", true} // ❌ VIOLATION - positional struct literal
+```
+
+**Good:**
+```go
+_ = User{
+		FirstName: "John",
+		LastName:  "Doe",
+		Admin:     true,
+}
+```
+
+**Why:**
+Positional struct composite literals are fragile: adding, removing, or
+reordering fields in the struct type can silently change the meaning of
+call sites. Keyed literals (`Field: value`) are explicit and robust to
+reordering.
+
+**How the check works:**
+- The analyzer inspects composite literals and uses type information to
+	determine whether the literal constructs a struct type. If the literal
+	uses positional elements (no keyed `Field:` entries) the analyzer reports
+	a diagnostic suggesting keyed fields.
+- Exception: test table entries named `tests` with three or fewer fields are
+	allowed to use positional literals (common concise test-table pattern).
+
+**Should be disabled by default:**
+This check should be disabled by default because `go vet` already warns about
+non-keyed composite literals in many cases. Enable it explicitly in your
+plugin configuration if you want repository-level enforcement.
+
+**Suppressing:** Use `//nolint:struct_field_key` to silence the check for
+intentional or unavoidable positional literals.
+
 **Performance tradeoffs:**
 - SSA and call-following improve accuracy but cost CPU/time. The analyzer
 	avoids running heavy pointer-based callgraph analysis by default and uses a

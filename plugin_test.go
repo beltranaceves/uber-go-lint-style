@@ -165,6 +165,19 @@ func TestStructEmbedRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "struct_embed"), "testlintdata/struct_embed")
 }
 
+func TestStructFieldKeyRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "struct_field_key"), "testlintdata/struct_field_key")
+}
+
 func TestEnumStartRule(t *testing.T) {
 	newPlugin, err := register.GetPlugin("uber-go-lint-style")
 	require.NoError(t, err)
