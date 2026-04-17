@@ -1523,3 +1523,90 @@ if len(s) == 0 { /* ... */ }
 
 **Suppressing:** Use `//nolint:slice_nil` to silence the check in cases where an explicit empty slice is intentional (for example when a non-nil empty slice is required by serialization or API compatibility).
 
+### `table_less_complex` — Avoid complex branching in table-driven tests
+
+**What it detects:**
+```go
+func TestBadConditionalLogic(t *testing.T) {
+	tests := []struct {
+		name       string
+		input      string
+		shouldErr  bool
+		expectCall bool
+	}{
+		{name: "case1", input: "a", shouldErr: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := processInput(tt.input)
+			
+			if tt.shouldErr {  // ❌ VIOLATION - complex conditional on table field
+				if err == nil {
+					t.Errorf("expected error")
+				}
+				return
+			}
+			
+			if tt.expectCall {  // ❌ VIOLATION - complex conditional on table field
+				// check the result
+			}
+		})
+	}
+}
+```
+
+**Good:**
+```go
+func TestSuccessCases(t *testing.T) {
+	tests := []struct {
+		name       string
+		input      string
+		wantOutput string
+	}{
+		{name: "case1", input: "a", wantOutput: "result1"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := processInput(tt.input)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if result != tt.wantOutput {
+				t.Errorf("got %s, want %s", result, tt.wantOutput)
+			}
+		})
+	}
+}
+
+func TestErrorCases(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{name: "invalid", input: "bad"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := processInput(tt.input)
+			if err == nil {
+				t.Errorf("expected error")
+			}
+		})
+	}
+}
+```
+
+**Why:**
+Complex branching logic inside table-driven test subtests (controlled by table fields like `shouldErr`, `expectCall`, `skipValidation`) makes tests harder to read, maintain, and reason about. It violates the principle that each subtest should be simple and focused. When multiple paths or conditional assertions are needed, split the test into separate focused test functions or multiple narrower table tests. This improves clarity and makes it easier to debug failures.
+
+**How the check works:**
+- Uses type information (`LoadModeTypesInfo`) to identify test functions (those with a `*testing.T` parameter).
+- Detects table-driven test patterns: slice-of-struct assignments followed by `for...range` loops with `t.Run` calls.
+- Analyzes the closure body of each `t.Run` call and flags conditional statements (if/switch) that check table fields with problematic patterns: `shouldCall`, `shouldErr`, `expectCall`, `skipValidation`, `skipAssertion`.
+- Explicitly allows simple value-based fields like `wantErr`, `wantOutput`, and `expectedResult` (which represent expected outcomes rather than conditional logic control).
+
+**Suppressing:** Use `//nolint:table_less_complex` to silence the check in cases where conditional branching in a single test is unavoidable or intentional. However, consider refactoring to separate tests for improved clarity and maintainability.
+
