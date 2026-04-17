@@ -783,3 +783,16 @@ func TestPreferStrconvRule(t *testing.T) {
 
 	analysistest.Run(t, testdataDir(t), a, "testlintdata/prefer_strconv")
 }
+
+func TestStringByteSliceRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "string_byte_slice"), "testlintdata/string_byte_slice")
+}

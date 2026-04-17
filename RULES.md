@@ -510,6 +510,38 @@ significantly faster and allocate less than general `fmt` formatting helpers.
 **Suppressing:** Use `//nolint:prefer_strconv` to silence the check for
 specific sites where using `fmt` is intentional.
 
+### `string_byte_slice` — Avoid repeated string-to-byte conversions
+
+**What it detects:**
+```go
+for i := 0; i < b.N; i++ {
+	w.Write([]byte("Hello world")) // ❌ VIOLATION - repeated conversion
+}
+```
+
+**Good:**
+```go
+data := []byte("Hello world")
+for i := 0; i < b.N; i++ {
+	w.Write(data)
+}
+```
+
+**Why:**
+Converting a string to a byte slice allocates memory. Doing this repeatedly
+inside hot loops produces unnecessary allocations and increases GC pressure.
+Convert once and reuse the resulting `[]byte` when the input is a fixed
+literal or otherwise invariant across iterations.
+
+**How the check works:**
+- AST-based analyzer that looks for expressions of the form `[]byte(<string-lit>)`
+	appearing directly inside loop bodies (`for`, `range`). It reports a
+	diagnostic at the conversion site recommending hoisting the conversion
+	outside the loop and reusing the result.
+
+**Suppressing:** Use `//nolint:string_byte_slice` to silence the check when
+a repeated conversion is intentional.
+
 ### `printf_name` — Name Printf-style functions with a trailing `f`
 
 **What it detects:**
