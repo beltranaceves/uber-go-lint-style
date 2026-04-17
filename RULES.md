@@ -758,6 +758,42 @@ Embedding can leak implementation details, change zero-value behavior, and unint
 
 **Suppressing:** Use `//nolint:struct_embed` to silence the check when embedding is intentional.
 
+### `struct_field_zero` — Omit zero-value fields in struct literals
+
+**What it detects:**
+```go
+user := User{
+	FirstName: "John",
+	LastName:  "Doe",
+	MiddleName: "", // ❌ VIOLATION - zero value
+	Admin: false,     // ❌ VIOLATION - zero value
+}
+```
+
+**Good:**
+```go
+user := User{
+	FirstName: "John",
+	LastName:  "Doe",
+}
+```
+
+**Why:**
+Explicitly listing fields with zero values adds noise and can obscure
+meaningful, non-default fields. Let Go initialize zero values unless the
+presence of the field with a zero value conveys useful intent (for example
+in test tables where named zero values explain test inputs).
+
+**How the check works:**
+- The analyzer inspects keyed struct literals and, for each keyed field,
+	conservatively detects literal zero values (empty string `""`, numeric
+	`0`, boolean `false`, and `nil` for pointer/slice/map/chan/func/interface
+	kinds). If a keyed field is set to a literal zero the analyzer reports a
+	diagnostic suggesting omitting it. Test tables named `tests` are exempt.
+
+**Suppressing:** Use `//nolint:struct_field_zero` to silence the check for
+intentional zero-valued fields.
+
 ### `enum_start` — Start enums at one
 
 **What it detects:**

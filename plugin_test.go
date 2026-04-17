@@ -178,6 +178,19 @@ func TestStructFieldKeyRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "struct_field_key"), "testlintdata/struct_field_key")
 }
 
+func TestStructFieldZeroRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "struct_field_zero"), "testlintdata/struct_field_zero")
+}
+
 func TestEnumStartRule(t *testing.T) {
 	newPlugin, err := register.GetPlugin("uber-go-lint-style")
 	require.NoError(t, err)
