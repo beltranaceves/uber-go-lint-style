@@ -727,6 +727,37 @@ type ConcreteList struct {
 **How the check works:**
 This AST-based analyzer looks for exported (`type` names starting with an uppercase letter) struct declarations that contain anonymous (embedded) fields whose type name is exported. It reports the embedded field position with a clear diagnostic. Cases can be suppressed with `//nolint:embed_public` when embedding is intentional.
 
+### `struct_embed` — Embedding in Structs
+
+**What it detects:**
+```go
+type Client struct {
+	version int
+	http.Client
+}
+
+// BAD: embedded fields should be at the top and separated by a blank line
+
+type Client struct {
+	http.Client
+
+	version int
+}
+```
+
+Embedding should provide tangible benefit and must not change zero-value semantics, expose unrelated functions/fields, or make outer types harder to construct or use. The analyzer also flags embedding of `sync.Mutex` (including pointer forms) because embedding a mutex exposes `Lock`/`Unlock` methods on the outer type and changes its API surface.
+
+**Why:**
+Embedding can leak implementation details, change zero-value behavior, and unintentionally expose inner methods on the outer type. Keeping embedded fields at the top with a separating blank line improves readability and makes the intent explicit. Avoid embedding mutexes to prevent exposing lock methods and to prefer zero-value mutex fields.
+
+**How the check works:**
+- AST-based walker inspects struct type declarations.
+- Reports anonymous (embedded) fields that appear after named fields.
+- Reports missing blank line between the last embedded field and the first regular field.
+- Uses type information (`pass.TypesInfo`) to detect embeddings of `sync.Mutex` or `*sync.Mutex` and reports a diagnostic recommending a named field instead.
+
+**Suppressing:** Use `//nolint:struct_embed` to silence the check when embedding is intentional.
+
 ### `enum_start` — Start enums at one
 
 **What it detects:**
