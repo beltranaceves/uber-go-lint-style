@@ -426,6 +426,32 @@ Using a `const` for format strings enables `go vet` and other static tools to an
 
 **Suppressing:** Use `//nolint:printf_const` to silence the check for specific sites where a non-`const` format is intentional.
 
+### `printf_name` — Name Printf-style functions with a trailing `f`
+
+**What it detects:**
+```go
+// BAD: function looks like printf-style but missing trailing 'f'
+func Wrap(format string, a ...interface{}) {}
+
+// GOOD
+func Wrapf(format string, a ...interface{}) {}
+```
+
+**Why:**
+Printf-style functions (those that accept a format string and a variadic
+parameter such as `...interface{}`) should have names ending in `f` so that
+`go vet` and other tools can recognize them as formatters and perform format
+string checks. Consistent naming also makes intent clearer to readers.
+
+**How the check works:**
+- AST-based analyzer inspects function and method declarations.
+- It detects functions that have at least one `string` parameter and a final
+	variadic `...interface{}` (or `...any`) parameter, and reports when the
+	function name does not end with `f`.
+
+**Suppressing:** Use `//nolint:printf_name` to silence the check for
+sites where a non-`f` name is intentional.
+
 ### `container_copy` — Copy slices/maps at API boundaries
 
 **What it detects:**
