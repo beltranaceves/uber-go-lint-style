@@ -1719,3 +1719,41 @@ Complex branching logic inside table-driven test subtests (controlled by table f
 
 **Suppressing:** Use `//nolint:table_less_complex` to silence the check in cases where conditional branching in a single test is unavoidable or intentional. However, consider refactoring to separate tests for improved clarity and maintainability.
 
+
+### `var_scope` — Reduce scope of variables
+
+**What it detects:**
+```go
+err := os.WriteFile(name, data, 0644)
+if err != nil {
+		return err
+}
+```
+
+**Good:**
+```go
+if err := os.WriteFile(name, data, 0644); err != nil {
+		return err
+}
+```
+
+**Why:**
+Reducing the lexical scope of variables to the smallest block where they are
+needed improves readability, reduces accidental reuse or mutation, and makes
+reasoning about lifetimes and ownership simpler.
+
+**How the check works:**
+- The analyzer uses AST traversal plus `pass.TypesInfo` to find local
+	declarations that are only referenced inside a single, more-inner scope
+	(for example inside an `if`, `for`, or `switch` block). It reports a
+	diagnostic suggesting the variable be declared in that inner block.
+- The implementation is intentionally conservative to avoid false positives.
+
+**Limitations / Release note:**
+- Current implementation is conservative and does not handle multi-assignment
+	(`a, err := ...`) or some complex control-flow patterns. It should be
+	expanded and thoroughly tested before enabling broadly in a release.
+
+**Suppressing:** Use `//nolint:var_scope` to silence the check for
+intentional or exceptional cases.
+
