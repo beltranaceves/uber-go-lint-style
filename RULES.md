@@ -1118,3 +1118,33 @@ to the saved function value.
 **Suppressing:** Use `//nolint:interface_receiver` to silence reports when
 taking a method value is intentional.
 
+
+### `slice_nil` — Prefer nil for zero-value slices and `len` for emptiness
+
+**What it detects:**
+```go
+// BAD: returning or declaring an explicit zero-length slice
+return []int{}
+nums := []int{}
+return make([]string, 0)
+
+// BAD: using `s == nil` to check for emptiness
+if s == nil { /* ... */ }
+
+// GOOD
+return nil
+var nums []int
+if len(s) == 0 { /* ... */ }
+```
+
+**Why:**
+`nil` is a valid zero-length slice in Go and is the preferred representation for an empty, unallocated slice value. Returning or declaring explicit empty slice literals (for example `[]T{}` or `make([]T, 0)`) allocates a distinct non-nil slice value and is unnecessary in most APIs. To test emptiness, use `len(s) == 0` which is correct for both `nil` and non-nil zero-length slices.
+
+**How the check works:**
+- The analyzer inspects AST nodes and uses type information (`LoadModeTypesInfo`) to:
+	- detect returned or assigned empty slice composite literals (`[]T{}`) and `make(..., 0)`, and
+	- detect binary comparisons of slices to `nil` that are likely intended as emptiness checks.
+- For literals and `make(..., 0)` it reports a suggestion to prefer `nil` (or `var x []T` for declarations). For comparisons to `nil` it recommends using `len(s) == 0`.
+
+**Suppressing:** Use `//nolint:slice_nil` to silence the check in cases where an explicit empty slice is intentional (for example when a non-nil empty slice is required by serialization or API compatibility).
+

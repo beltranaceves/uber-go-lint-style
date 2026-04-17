@@ -657,3 +657,25 @@ func TestPrintfNameRule(t *testing.T) {
 
 	analysistest.Run(t, testdataDir(t), a, "testlintdata/printf_name")
 }
+
+func TestSliceNilRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "slice_nil" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "slice_nil analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/slice_nil")
+}
