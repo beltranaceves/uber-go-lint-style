@@ -856,6 +856,44 @@ and aligns with similar rules (for example `map_init` and `slice_nil`).
 composite literal is intentional (for example when the literal's presence
 documents intent or follows a local convention).
 
+### `time_usage` — Prefer `time.Time` and `time.Duration`
+
+**What it detects:**
+```go
+func isActive(now int) bool { return now > start } // ❌ VIOLATION - numeric time-like param
+
+time.Sleep(10) // ❌ VIOLATION - numeric literal passed to time.Sleep
+```
+
+**Good:**
+```go
+func isActive(now time.Time) bool { return now.After(start) }
+time.Sleep(10 * time.Second)
+```
+
+**Why:**
+Using plain numeric types to represent instants or durations loses semantic
+information (units, timezone, etc.) and prevents use of the `time` package's
+helpers such as parsing, formatting, and duration arithmetic. Prefer
+`time.Time` for instants and `time.Duration` for intervals and sleeps.
+
+**How the check works (heuristics):**
+- Flags function parameters whose names match common time-like identifiers
+	(for example `now`, `start`, `stop`, `timestamp`, `ms`, `seconds`,
+	`interval`) but whose declared type is a numeric basic type (`int`,
+	`int64`, `float64`, etc.).
+- Flags calls to `time.Sleep` where the provided argument has a numeric
+	basic type rather than `time.Duration` (for example `time.Sleep(10)` or
+	`time.Sleep(delay)` when `delay` is an `int`).
+
+This rule is intentionally conservative — it uses name-based and type
+heuristics to avoid false positives. It documents limitations in the rule's
+`Doc` field and can be suppressed with `//nolint:time_usage` for edge cases.
+
+**Suppressing:** Use `//nolint:time_usage` to silence the check when a
+numeric representation is intentional (for example working with unix epoch
+integers in interop code).
+
 ### `struct_tag` — Use field tags in marshaled structs
 
 Any struct field that is marshaled into JSON, YAML,

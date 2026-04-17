@@ -204,6 +204,19 @@ func TestStructPointerRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "struct_pointer"), "testlintdata/struct_pointer")
 }
 
+func TestTimeUsageRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "time_usage"), "testlintdata/time_usage")
+}
+
 func TestStructZeroRule(t *testing.T) {
 	newPlugin, err := register.GetPlugin("uber-go-lint-style")
 	require.NoError(t, err)
