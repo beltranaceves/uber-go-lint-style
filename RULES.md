@@ -822,6 +822,40 @@ in test tables where named zero values explain test inputs).
 **Suppressing:** Use `//nolint:struct_field_zero` to silence the check for
 intentional zero-valued fields.
 
+### `struct_zero` — Use `var` for zero-value struct declarations
+
+**What it detects:**
+```go
+user := User{}      // ❌ VIOLATION - zero-value composite literal
+var user = User{}   // ❌ VIOLATION - redundant composite literal initializer
+
+_ = &User{}         // ✅ OK - pointer literal not flagged
+```
+
+**Good:**
+```go
+var user User       // ✅ OK - prefer `var` for zero-value structs
+```
+
+**Why:**
+When all the fields of a struct are omitted in a declaration the `var` form
+clearly expresses the zero value (for example `var u User`). Using a
+zero-valued composite literal (`User{}`) or `var x = User{}` blurs the
+distinction between intentionally initialized structs and zero values. The
+`var` form matches how the project prefers to express zero-valued aggregates
+and aligns with similar rules (for example `map_init` and `slice_nil`).
+
+**How the check works:**
+- AST-based analyzer that conservatively detects empty keyed or positional
+	struct composite literals with no elements (for example `User{}`) used in
+	value declarations, short declarations, assignments, and returns. Pointer
+	composite literals (for example `&User{}`) are not flagged. The analyzer
+	reports a diagnostic suggesting `var` for zero-value struct declarations.
+
+**Suppressing:** Use `//nolint:struct_zero` to silence the check where a
+composite literal is intentional (for example when the literal's presence
+documents intent or follows a local convention).
+
 ### `struct_tag` — Use field tags in marshaled structs
 
 Any struct field that is marshaled into JSON, YAML,
