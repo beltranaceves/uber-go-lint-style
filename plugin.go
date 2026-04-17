@@ -118,6 +118,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.SliceNilRule{}).BuildAnalyzer(),
 		(&rules.StrconvRule{}).BuildAnalyzer(),
 		(&rules.StringByteSliceRule{}).BuildAnalyzer(),
+		(&rules.StringEscapeRule{}).BuildAnalyzer(),
 		(&rules.ExitOnceRule{}).BuildAnalyzer(),
 		(&rules.ErrorTypeRule{}).BuildAnalyzer(),
 	}

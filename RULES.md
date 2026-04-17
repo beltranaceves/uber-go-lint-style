@@ -542,6 +542,35 @@ literal or otherwise invariant across iterations.
 **Suppressing:** Use `//nolint:string_byte_slice` to silence the check when
 a repeated conversion is intentional.
 
+### `string_escape` — Use raw string literals to avoid escaping quotes
+
+**What it detects:**
+```go
+wantError := "unknown name:\"test\"" // ❌ VIOLATION - hand-escaped quotes
+```
+
+**Good:**
+```go
+wantError := `unknown name:"test"` // ✅ OK - raw string literal
+```
+
+**Why:**
+Raw string literals (backticks) avoid visual noise from backslash-escaped
+quotes and are easier to read and maintain when the intended content
+includes quotes. They also make copy-paste of multi-line text simpler.
+
+**How the check works:**
+- AST-based analyzer that inspects interpreted (double-quoted) string
+	literals. It flags literals that embed escaped double quotes (`\"`) but
+	do not contain other escape sequences (for example `\n`, `\t`, `\\`,
+	`\x`, `\u`) and whose unquoted content does not contain a backtick (`` ` ``).
+- The rule is conservative: it skips strings that rely on escape sequences or
+	contain backticks because converting those to a raw literal would change
+	semantics or be impossible.
+
+**Suppressing:** Use `//nolint:string_escape` to silence the check when
+the literal must remain an interpreted string.
+
 ### `printf_name` — Name Printf-style functions with a trailing `f`
 
 **What it detects:**
