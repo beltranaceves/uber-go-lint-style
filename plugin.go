@@ -76,6 +76,7 @@ func New(settings any) (register.LinterPlugin, error) {
 func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 	candidates := []*analysis.Analyzer{
 		(&rules.TodoRule{}).BuildAnalyzer(),
+		(&rules.TypeAssertRule{}).BuildAnalyzer(),
 		(&rules.AtomicRule{}).BuildAnalyzer(),
 		(&rules.BuiltinNameRule{}).BuildAnalyzer(),
 		(&rules.ChannelSizeRule{}).BuildAnalyzer(),

@@ -14,6 +14,24 @@ Note: These rules are enforced by the repository's linter plugin. If you use the
 ```
 
 **Why:** Unattributed TODOs can be lost or unmaintained. Requiring an author ensures accountability and provides context for future developers.
+### `type_assert` — Handle type assertion failures
+
+**What it detects:**
+```go
+t := i.(string) // ❌ VIOLATION - single-value type assertion may panic
+t, ok := i.(string)
+if !ok {
+	// handle the error gracefully
+}
+```
+
+**Why:** The single-return-value form of a type assertion will panic when the dynamic type does not match. Using the comma-ok idiom prevents runtime panics and forces explicit handling of unexpected types.
+
+**How the check works:**
+- AST-based analyzer that flags `TypeAssertExpr` usages which are not used in a two-value assignment (for example `x, ok := i.(T)`). It is conservative to avoid false positives in assignment or multi-value contexts.
+
+**Suppressing:** Use `//nolint:type_assert` to silence the check for deliberate or safe usages.
+
 ### `param_naked` — Avoid naked parameters
 
 **What it detects:**
