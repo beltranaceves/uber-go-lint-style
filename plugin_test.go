@@ -203,6 +203,28 @@ func TestErrorWrapRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), a, "testlintdata/error_wrap")
 }
 
+func TestErrorTypeRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "error_type" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "error_type analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/error_type")
+}
+
 func TestExitMainRule(t *testing.T) {
 	newPlugin, err := register.GetPlugin("uber-go-lint-style")
 	require.NoError(t, err)

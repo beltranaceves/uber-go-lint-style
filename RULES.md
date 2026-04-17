@@ -367,6 +367,39 @@ This rule relies on heuristics and text-pattern detection that can produce false
 **LLM-assisted linting candidate:**
 This check is a prime candidate for augmentation with an LLM-based reviewer. A language model can provide richer context-aware judgments (for example, understanding when a verb is semantically important, when a message contains multiple clauses, or when the surrounding code documents an intentional phrasing). Consider using LLM-assisted tooling or a human-in-the-loop review to reduce false positives before enabling this rule broadly.
 
+### `error_type` — Error Types
+
+**What it detects:**
+```go
+// package foo
+
+var ErrBad = fmt.Errorf("file %q not found", "name") // ❌ VIOLATION - exported error created with fmt.Errorf
+
+// package bar
+if errors.Is(err, foo.ErrBad) {
+		// callers can't reliably match dynamic fmt.Errorf values
+}
+```
+
+**Why:**
+There are a few options for declaring errors. If callers need to match an
+error (with `errors.Is` or `errors.As`), expose either a top-level `var` created
+with `errors.New` or provide a custom `error` type. Use `fmt.Errorf` for
+non-matchable, dynamic error messages only when the error is not part of the
+package's public API. Exported package-level errors initialized with
+`fmt.Errorf` expose a dynamic string that callers cannot reliably match.
+
+**How the check works:**
+- Uses type information (`LoadModeTypesInfo`).
+- Flags exported package-level `var` declarations whose initializer is a
+	call to `fmt.Errorf` and reports a diagnostic recommending a top-level
+	static `errors.New` variable or a custom error type instead. The rule is
+	conservative and only targets exported, package-level error variables so
+	internal uses of `fmt.Errorf` are unaffected.
+
+Note: exporting error variables or types makes them part of the package's
+public API — choose the form that best supports matching and error handling.
+
 
 ### `channel_size` — Prefer unbuffered or size one channels
 
