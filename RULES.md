@@ -822,6 +822,58 @@ in test tables where named zero values explain test inputs).
 **Suppressing:** Use `//nolint:struct_field_zero` to silence the check for
 intentional zero-valued fields.
 
+### `struct_tag` — Use field tags in marshaled structs
+
+Any struct field that is marshaled into JSON, YAML,
+or other formats that support tag-based field naming
+should be annotated with the relevant tag.
+
+**What it detects:**
+
+```go
+type Stock struct {
+	Price int
+	Name  string
+}
+
+bytes, err := json.Marshal(Stock{
+	Price: 137,
+	Name:  "UBER",
+})
+```
+
+**Good:**
+
+```go
+type Stock struct {
+	Price int    `json:"price"`
+	Name  string `json:"name"`
+	// Safe to rename Name to Symbol.
+}
+
+bytes, err := json.Marshal(Stock{
+	Price: 137,
+	Name:  "UBER",
+})
+```
+
+**Why:**
+The serialized form of the structure is a contract between different systems.
+Changes to the structure of the serialized form--including field names--break
+this contract. Specifying field names inside tags makes the contract explicit,
+and it guards against accidentally breaking the contract by refactoring or
+renaming fields.
+
+**How the check works:**
+The analyzer looks for exported struct fields that lack tags when the struct
+type is passed to common marshaling functions such as `encoding/json` or
+`gopkg.in/yaml.v3` marshalers. It uses type information (`pass.TypesInfo`) to
+resolve call targets and to inspect the underlying struct type. The check is
+conservative to avoid false positives and can be suppressed where appropriate.
+
+**Suppressing:** Use `//nolint:struct_tag` to silence the check when tags
+are intentionally omitted or when a field is not part of a serialized API.
+
 ### `enum_start` — Start enums at one
 
 **What it detects:**
