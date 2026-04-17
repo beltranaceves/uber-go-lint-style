@@ -426,6 +426,33 @@ Using a `const` for format strings enables `go vet` and other static tools to an
 
 **Suppressing:** Use `//nolint:printf_const` to silence the check for specific sites where a non-`const` format is intentional.
 
+### `prefer_strconv` — Prefer `strconv` over `fmt` for primitive-to-string conversions
+
+**What it detects:**
+```go
+v := 42
+_ = fmt.Sprint(v)           // ❌ VIOLATION - integer converted via fmt
+_ = fmt.Sprintf("%d", v) // ❌ VIOLATION - integer converted via fmt
+```
+
+**Why:**
+When converting primitive values to strings (booleans, integers, unsigned
+integers, floats), the `strconv` package provides purpose-built functions
+(`Itoa`, `FormatInt`, `FormatUint`, `FormatFloat`, `FormatBool`) that are
+significantly faster and allocate less than general `fmt` formatting helpers.
+
+**How the check works:**
+- Runs with type information (`LoadModeTypesInfo`).
+- The analyzer inspects call expressions for `fmt.Sprint`, `fmt.Sprintln`, and
+	`fmt.Sprintf` and conservatively flags uses that appear to be simple
+	primitive-to-string conversions (single argument `Sprint`/`Sprintln`, or
+	`Sprintf` with a literal format and one value). It resolves the argument's
+	type via `pass.TypesInfo` and reports when the argument is a primitive
+	(`bool`, integer kinds, unsigned kinds, floats).
+
+**Suppressing:** Use `//nolint:prefer_strconv` to silence the check for
+specific sites where using `fmt` is intentional.
+
 ### `printf_name` — Name Printf-style functions with a trailing `f`
 
 **What it detects:**
