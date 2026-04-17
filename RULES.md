@@ -342,7 +342,31 @@ func (r ResolveError) Error() string { return "" }
 **Why:** Exported package-level error variables should be discoverable and consistent (`Err` prefix) so callers can match them with `errors.Is`. Unexported package errors should follow a parallel `err` prefix to signal package-local use. Custom error types should end with the `Error` suffix to make their intent obvious and simplify error type matching with `errors.As`.
 
 **How the check works:**
-The analyzer inspects package-level `var` declarations and uses `pass.TypesInfo` to detect variables of the built-in `error` type. It enforces `Err`/`err` prefixes for exported and unexported variables respectively. It also looks at named types and checks whether they implement an `Error() string` method; if so, it requires the type name to end with `Error`. The rule runs under the plugin's `LoadModeTypesInfo` so type information is available.
+
+### `error_wrap` — Avoid verbose "failed to" prefixes when wrapping errors
+
+**What it detects:**
+```go
+return fmt.Errorf("failed to create new store: %w", err) // ❌ VIOLATION - verbose prefix
+```
+
+**Good:**
+```go
+return fmt.Errorf("new store: %w", err)
+```
+
+**Why:**
+Prefixing wrapped errors with phrases like "failed to" or "failed" tends to pile up redundant wording as the error propagates up the stack (for example `failed to x: failed to y: failed to create new store: the error`). Succinct context strings (for example `new store: %w`) preserve the original error while providing actionable context without repetitive verbs.
+
+**How the check works:**
+- AST-based analyzer that detects `fmt.Errorf` calls where the format string literal begins with the tokens "failed to" or "failed" (case-insensitive). It reports a diagnostic at the format string and suggests a concise context. The check is intentionally conservative and only inspects literal format strings to avoid false positives.
+
+**Disabled by default:**
+This rule relies on heuristics and text-pattern detection that can produce false positives in real-world code (for example multi-sentence error messages, localized strings, or messages intentionally including verbs). Because of that brittleness, the rule is disabled by default; enable it explicitly in your plugin configuration when you want to opt into this stylistic enforcement. Use `//nolint:error_wrap` to suppress individual sites.
+
+**LLM-assisted linting candidate:**
+This check is a prime candidate for augmentation with an LLM-based reviewer. A language model can provide richer context-aware judgments (for example, understanding when a verb is semantically important, when a message contains multiple clauses, or when the surrounding code documents an intentional phrasing). Consider using LLM-assisted tooling or a human-in-the-loop review to reduce false positives before enabling this rule broadly.
+
 
 ### `channel_size` — Prefer unbuffered or size one channels
 

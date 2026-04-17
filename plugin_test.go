@@ -180,6 +180,29 @@ func TestErrorOnceRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[12], "testlintdata/error_once")
 }
 
+func TestErrorWrapRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	// Find analyzer by name to avoid relying on fixed index
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "error_wrap" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "error_wrap analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/error_wrap")
+}
+
 func TestExitMainRule(t *testing.T) {
 	newPlugin, err := register.GetPlugin("uber-go-lint-style")
 	require.NoError(t, err)
