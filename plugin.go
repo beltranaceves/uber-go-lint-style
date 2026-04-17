@@ -89,6 +89,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.ErrorNameRule{}).BuildAnalyzer(),
 		(&rules.ErrorOnceRule{}).BuildAnalyzer(),
 		(&rules.ExitMainRule{}).BuildAnalyzer(),
+
 		(&rules.FunctionNameRule{}).BuildAnalyzer(),
 		(&rules.FunctionOrderRule{}).BuildAnalyzer(),
 		(&rules.FunctionalOptionRule{}).BuildAnalyzer(),
@@ -115,6 +116,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.PrintfNameRule{}).BuildAnalyzer(),
 		(&rules.SliceNilRule{}).BuildAnalyzer(),
 		(&rules.StrconvRule{}).BuildAnalyzer(),
+		(&rules.ExitOnceRule{}).BuildAnalyzer(),
 	}
 
 	var out []*analysis.Analyzer

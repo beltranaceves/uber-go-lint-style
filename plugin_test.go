@@ -193,6 +193,28 @@ func TestExitMainRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), analyzers[13], "testlintdata/exit_main")
 }
 
+func TestExitOnceRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	var a *analysis.Analyzer
+	for _, an := range analyzers {
+		if an.Name == "exit_once" {
+			a = an
+			break
+		}
+	}
+	require.NotNil(t, a, "exit_once analyzer not found")
+
+	analysistest.Run(t, testdataDir(t), a, "testlintdata/exit_once")
+}
+
 func TestFunctionNameRule(t *testing.T) {
 	newPlugin, err := register.GetPlugin("uber-go-lint-style")
 	require.NoError(t, err)

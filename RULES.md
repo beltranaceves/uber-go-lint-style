@@ -735,6 +735,51 @@ outside of the `main` function in package `main`. Files ending in `_test.go`
 are ignored. Suppress with `//nolint:exit_main` when termination from a helper
 is intentional.
 
+### `exit_once` — Prefer a single exit in `main`
+
+**What it detects:**
+```go
+func main() {
+	if err := setup(); err != nil {
+		log.Fatal(err) // ❌ VIOLATION - first exit
+	}
+
+	if err := run(); err != nil {
+		os.Exit(1) // ❌ VIOLATION - second exit
+	}
+}
+```
+
+**Good:** centralize exits in one place and return errors from helpers
+```go
+func main() {
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1) // ✅ Single, centralized exit
+	}
+}
+
+func run() error {
+	// do work and return errors to main
+}
+```
+
+**Why:**
+Having multiple process-exit points in `main()` makes it harder to ensure
+consistent cleanup and observability. Delegating business logic to a helper
+that returns an error and handling process termination in a single site
+improves testability and reduces the chance of skipped defers or duplicated
+exit handling.
+
+**How the check works:**
+- The analyzer inspects the `main()` function in package `main` and counts
+  calls to `os.Exit` and `log.Fatal*`. If more than one is present, it
+  reports a diagnostic recommending centralizing exit logic and delegating
+  work to a helper that returns an error.
+
+**Suppressing:** Use `//nolint:exit_once` to silence the check for specific
+sites where multiple exits in `main()` are intentional.
+
 ### `goroutine_exit` — Wait for goroutines spawned by entrypoints
 
 **What it detects:**
