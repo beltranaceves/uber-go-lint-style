@@ -339,6 +339,25 @@ var _e error = F() // ✅ OK - explicit type required (widening to error)
 **How the check works:**
 The analyzer inspects top-level `var` declarations and, when a `ValueSpec` includes both an explicit type and an initializer, it uses type information (`pass.TypesInfo`) to compare the declared type with the initializer's type. If they are identical, the analyzer reports a diagnostic suggesting omitting the explicit type. Suppress with `//nolint:global_decl` for intentional exceptions.
 
+### `var_decl` — Prefer short declarations for local variables
+
+**What it detects:**
+```go
+var s = "foo"        // ❌ VIOLATION - prefer := for local variables with initializer
+var a, b = 1, 2       // ❌ VIOLATION - prefer := for multi-name local declarations
+
+var s string = "foo" // ✅ OK - explicit type provided
+var filtered []int     // ✅ OK - empty slice declaration allowed
+```
+
+**Why:** Using `:=` for local variables with an initializer is more concise and idiomatic in Go. The `var` form is appropriate when an explicit type is required or when declaring an empty slice (for clarity and zero value semantics).
+
+**How the check works:**
+- AST-based analyzer that looks for local `var` declarations (function-local `DeclStmt` containing a `GenDecl` with `var`) whose `ValueSpec` provides one or more `Values` but omits an explicit `Type`. The analyzer reports a diagnostic recommending `:=` for those sites, while allowing `var` when an explicit type is present or when no initializer is provided (for example `var s []T`).
+
+**Suppressing:** Use `//nolint:var_decl` to silence the check for intentional or exceptional local declarations.
+
+
 
 ### `error_name` — Error naming conventions
 

@@ -99,6 +99,7 @@ func (f *PluginExample) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		(&rules.ErrorWrapRule{}).BuildAnalyzer(),
 		(&rules.ExitMainRule{}).BuildAnalyzer(),
 
+		(&rules.VarDeclRule{}).BuildAnalyzer(),
 		(&rules.FunctionNameRule{}).BuildAnalyzer(),
 		(&rules.FunctionOrderRule{}).BuildAnalyzer(),
 		(&rules.FunctionalOptionRule{}).BuildAnalyzer(),

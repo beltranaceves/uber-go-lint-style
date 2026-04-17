@@ -61,6 +61,19 @@ func TestBuiltinNameRule(t *testing.T) {
 	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "builtin_name"), "testlintdata/builtin_name")
 }
 
+func TestVarDeclRule(t *testing.T) {
+	newPlugin, err := register.GetPlugin("uber-go-lint-style")
+	require.NoError(t, err)
+
+	plugin, err := newPlugin(nil)
+	require.NoError(t, err)
+
+	analyzers, err := plugin.BuildAnalyzers()
+	require.NoError(t, err)
+
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "var_decl"), "testlintdata/var_decl")
+}
+
 func TestTypeAssertRule(t *testing.T) {
 	newPlugin, err := register.GetPlugin("uber-go-lint-style")
 	require.NoError(t, err)
