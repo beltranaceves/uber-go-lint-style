@@ -6,7 +6,7 @@ import (
 )
 
 // BAD: exported var created with fmt.Errorf
-var ErrBad = fmt.Errorf("file %q not found", "name") // want "exported error variable is created by fmt.Errorf; export a top-level static error (errors.New) or use a custom error type instead"
+var ErrBad = fmt.Errorf("file %q not found", "name") // want "exported error variable is created by fmt.Errorf"
 
 // OK: exported static error
 var ErrGood = errors.New("could not open")

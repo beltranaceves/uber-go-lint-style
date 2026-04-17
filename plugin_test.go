@@ -21,7 +21,18 @@ func TestUberGoLintStyle(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[0], "testlintdata/todo")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "todo"), "testlintdata/todo")
+}
+
+func getAnalyzerByName(t *testing.T, analyzers []*analysis.Analyzer, name string) *analysis.Analyzer {
+	t.Helper()
+	for _, a := range analyzers {
+		if a.Name == name {
+			return a
+		}
+	}
+	t.Fatalf("analyzer %q not found", name)
+	return nil
 }
 
 func TestAtomicRule(t *testing.T) {
@@ -34,7 +45,7 @@ func TestAtomicRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[1], "testlintdata/atomic")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "atomic"), "testlintdata/atomic")
 }
 
 func TestBuiltinNameRule(t *testing.T) {
@@ -47,7 +58,7 @@ func TestBuiltinNameRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[2], "testlintdata/builtin_name")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "builtin_name"), "testlintdata/builtin_name")
 }
 
 func TestChannelSizeRule(t *testing.T) {
@@ -60,7 +71,7 @@ func TestChannelSizeRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[3], "testlintdata/channel_size")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "channel_size"), "testlintdata/channel_size")
 }
 
 func TestContainerCapacityRule(t *testing.T) {
@@ -73,7 +84,7 @@ func TestContainerCapacityRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[4], "testlintdata/container_capacity")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "container_capacity"), "testlintdata/container_capacity")
 }
 
 func TestContainerCopyRule(t *testing.T) {
@@ -86,7 +97,7 @@ func TestContainerCopyRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[5], "testlintdata/container_copy")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "container_copy"), "testlintdata/container_copy")
 }
 
 func TestDeclGroupRule(t *testing.T) {
@@ -99,7 +110,7 @@ func TestDeclGroupRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[6], "testlintdata/decl_group")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "decl_group"), "testlintdata/decl_group")
 }
 
 func TestDeferCleanRule(t *testing.T) {
@@ -112,7 +123,7 @@ func TestDeferCleanRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[7], "testlintdata/defer_clean")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "defer_clean"), "testlintdata/defer_clean")
 }
 
 func TestElseUnnecessaryRule(t *testing.T) {
@@ -125,7 +136,7 @@ func TestElseUnnecessaryRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[8], "testlintdata/else_unnecessary")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "else_unnecessary"), "testlintdata/else_unnecessary")
 }
 
 func TestEmbedPublicRule(t *testing.T) {
@@ -138,7 +149,7 @@ func TestEmbedPublicRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[9], "testlintdata/embed_public")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "embed_public"), "testlintdata/embed_public")
 }
 
 func TestEnumStartRule(t *testing.T) {
@@ -151,7 +162,7 @@ func TestEnumStartRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[10], "testlintdata/enum_start")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "enum_start"), "testlintdata/enum_start")
 }
 
 func TestErrorNameRule(t *testing.T) {
@@ -164,7 +175,7 @@ func TestErrorNameRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[11], "testlintdata/error_name")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "error_name"), "testlintdata/error_name")
 }
 
 func TestErrorOnceRule(t *testing.T) {
@@ -177,7 +188,7 @@ func TestErrorOnceRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[12], "testlintdata/error_once")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "error_once"), "testlintdata/error_once")
 }
 
 func TestErrorWrapRule(t *testing.T) {
@@ -235,7 +246,7 @@ func TestExitMainRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[13], "testlintdata/exit_main")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "exit_main"), "testlintdata/exit_main")
 }
 
 func TestExitOnceRule(t *testing.T) {
@@ -271,7 +282,11 @@ func TestFunctionNameRule(t *testing.T) {
 	require.NoError(t, err)
 
 	// FunctionNameRule was added at the end of the analyzers list
-	analysistest.Run(t, testdataDir(t), analyzers[14], "testlintdata/function_name")
+	t.Logf("analyzers count: %d", len(analyzers))
+	for i, an := range analyzers {
+		t.Logf("%02d: %s", i, an.Name)
+	}
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "function_name"), "testlintdata/function_name")
 }
 
 func TestFunctionOrderRule(t *testing.T) {
@@ -285,7 +300,7 @@ func TestFunctionOrderRule(t *testing.T) {
 	require.NoError(t, err)
 
 	// FunctionOrderRule was added at the end of the analyzers list
-	analysistest.Run(t, testdataDir(t), analyzers[15], "testlintdata/function_order")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "function_order"), "testlintdata/function_order")
 }
 
 func TestFunctionalOptionRule(t *testing.T) {
@@ -299,7 +314,7 @@ func TestFunctionalOptionRule(t *testing.T) {
 	require.NoError(t, err)
 
 	// FunctionalOptionRule was added at the end of the analyzers list
-	analysistest.Run(t, testdataDir(t), analyzers[16], "testlintdata/functional_option")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "functional_option"), "testlintdata/functional_option")
 }
 
 func TestGlobalDeclRule(t *testing.T) {
@@ -313,7 +328,7 @@ func TestGlobalDeclRule(t *testing.T) {
 	require.NoError(t, err)
 
 	// GlobalDeclRule was added at the end of the analyzers list
-	analysistest.Run(t, testdataDir(t), analyzers[17], "testlintdata/global_decl")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "global_decl"), "testlintdata/global_decl")
 }
 
 func TestGlobalMutRule(t *testing.T) {
@@ -327,7 +342,7 @@ func TestGlobalMutRule(t *testing.T) {
 	require.NoError(t, err)
 
 	// GlobalMutRule is appended at the end of the analyzers list
-	analysistest.Run(t, testdataDir(t), analyzers[18], "testlintdata/global_mut")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "global_mut"), "testlintdata/global_mut")
 }
 
 func TestGlobalNameRule(t *testing.T) {
@@ -341,7 +356,7 @@ func TestGlobalNameRule(t *testing.T) {
 	require.NoError(t, err)
 
 	// GlobalNameRule was appended after GlobalMutRule
-	analysistest.Run(t, testdataDir(t), analyzers[19], "testlintdata/global_name")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "global_name"), "testlintdata/global_name")
 }
 
 func TestGoroutineExitRule(t *testing.T) {
@@ -355,7 +370,7 @@ func TestGoroutineExitRule(t *testing.T) {
 	require.NoError(t, err)
 
 	// GoroutineExitRule was appended at the end of the analyzers list
-	analysistest.Run(t, testdataDir(t), analyzers[20], "testlintdata/goroutine_exit")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "goroutine_exit"), "testlintdata/goroutine_exit")
 }
 
 func TestGoroutineForgetRule(t *testing.T) {
@@ -369,7 +384,7 @@ func TestGoroutineForgetRule(t *testing.T) {
 	require.NoError(t, err)
 
 	// GoroutineForgetRule was appended after GoroutineExitRule
-	analysistest.Run(t, testdataDir(t), analyzers[21], "testlintdata/goroutine_forget")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "goroutine_forget"), "testlintdata/goroutine_forget")
 }
 
 func TestGoroutineInitRule(t *testing.T) {
@@ -383,7 +398,7 @@ func TestGoroutineInitRule(t *testing.T) {
 	require.NoError(t, err)
 
 	// GoroutineInitRule was appended after GoroutineForgetRule
-	analysistest.Run(t, testdataDir(t), analyzers[22], "testlintdata/goroutine_init")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "goroutine_init"), "testlintdata/goroutine_init")
 }
 
 func TestImportAliasRule(t *testing.T) {
@@ -397,7 +412,7 @@ func TestImportAliasRule(t *testing.T) {
 	require.NoError(t, err)
 
 	// ImportAliasRule was appended at the end of the analyzers list
-	analysistest.Run(t, testdataDir(t), analyzers[23], "testlintdata/import_alias")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "import_alias"), "testlintdata/import_alias")
 }
 
 func TestImportAliasRule_MissingTrace(t *testing.T) {
@@ -411,7 +426,7 @@ func TestImportAliasRule_MissingTrace(t *testing.T) {
 	require.NoError(t, err)
 
 	// Run analyzer against separate package that only imports example.com/trace/v2
-	analysistest.Run(t, testdataDir(t), analyzers[23], "testlintdata/import_alias_missing")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "import_alias"), "testlintdata/import_alias_missing")
 }
 
 func TestImportGroupRule(t *testing.T) {
@@ -424,7 +439,7 @@ func TestImportGroupRule(t *testing.T) {
 	analyzers, err := plugin.BuildAnalyzers()
 	require.NoError(t, err)
 
-	analysistest.Run(t, testdataDir(t), analyzers[24], "testlintdata/import_group")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "import_group"), "testlintdata/import_group")
 }
 
 func TestInitRule(t *testing.T) {
@@ -438,7 +453,7 @@ func TestInitRule(t *testing.T) {
 	require.NoError(t, err)
 
 	// InitRule is appended after ImportAliasRule and before ImportGroupRule in plugin.go
-	analysistest.Run(t, testdataDir(t), analyzers[25], "testlintdata/init")
+	analysistest.Run(t, testdataDir(t), getAnalyzerByName(t, analyzers, "init"), "testlintdata/init")
 }
 
 func TestMapInitRule(t *testing.T) {
