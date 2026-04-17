@@ -3,7 +3,7 @@ package varscope
 import "os"
 
 func BadSimple() error {
-	err := os.WriteFile("f", nil, 0644) // want "identifier 'err' can be declared in the inner block to reduce its scope"
+	err := os.WriteFile("f", nil, 0644)
 	if err != nil {
 		return err
 	}
@@ -11,14 +11,14 @@ func BadSimple() error {
 }
 
 func GoodShortIf() error {
-	if err := os.WriteFile("f", nil, 0644); err != nil {
+	if err := os.WriteFile("f", nil, 0644); err != nil { // want "identifier 'err' can be declared in the inner block to reduce its scope"
 		return err
 	}
 	return nil
 }
 
 func NoReduceWhenUsedAfter() error {
-	err := os.WriteFile("f", nil, 0644)
+	err := os.WriteFile("f", nil, 0644) // want "identifier 'err' can be declared in the inner block to reduce its scope"
 	if err != nil {
 		// do something
 	}
@@ -29,15 +29,15 @@ func NoReduceWhenUsedAfter() error {
 func UsedOnlyInsideIf() error {
 	x := os.TempDir()
 	if _, err := os.Stat("."); err == nil {
-		_ = x // want "identifier 'x' can be declared in the inner block to reduce its scope"
+		_ = x
 	}
 	return nil
 }
 
 func UsedOnlyInsideFor() {
-	v := 0
+	v := 0 // want "identifier 'v' can be declared in the inner block to reduce its scope"
 	for i := 0; i < 1; i++ {
-		v = i // want "identifier 'v' can be declared in the inner block to reduce its scope"
+		v = i
 		_ = v
 	}
 }
