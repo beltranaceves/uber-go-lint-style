@@ -89,7 +89,7 @@ version: v1.59.0
 
 plugins:
   - module: 'github.com/beltranaceves/uber-go-lint-style'
-    version: v0.1.1  # Use latest release
+    version: 'latest'
 ```
 
 **Step 2: Create a `.golangci.yml` to enable the plugin and rules**
@@ -171,30 +171,6 @@ This automatically builds the binary on first run and caches it for subsequent r
 ```bash
 make uber_lint
 ```
-
-Optional targets: `make uber_help` for usage, `make uber_clean` to reset.
-
-```makefile
-
-# View help
-uber_help:
-	@echo "Usage: make [target]"
-	@echo ""
-	@echo "Targets:"
-	@echo "  make uber_lint       Build plugin (if needed) and run linter"
-	@echo "  make uber_clean      Remove cached plugin binary"
-	@echo ""
-	@echo "Examples:"
-	@echo "  make uber_lint       # First run builds plugin, subsequent runs are fast"
-	@echo "  make uber_clean      # Reset and rebuild plugin next time"
-
-.PHONY: uber_lint uber_help uber_clean
-uber_clean:
-	@rm -f custom-gcl*
-	@echo "Cleaned custom linter artifacts"
-```
-
----
 
 ## Rules
 
