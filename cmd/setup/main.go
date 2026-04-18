@@ -47,16 +47,13 @@ const makefile = `
 
 .PHONY: uber_lint
 uber_lint: # Run Uber Go style linter (builds plugin if needed)
-	$Q if [ ! -f "./custom-gcl" ]; then \
-	$Q	echo "Building custom golangci-lint with uber-go-lint-style plugin..."; \
-	$Q	golangci-lint custom || exit 1; \
-	$Q fi
-	$Q ./custom-gcl run
+	$Q echo "Running Uber Go style linter (with golangci-lint)..."
+	$Q if [ ! -f "./custom-gcl" ]; then echo "Building custom golangci-lint with uber-go-lint-style plugin..."; golangci-lint custom || exit 1; fi; echo "Running Uber Go style golangci-lint..." ;./custom-gcl run
 
 .PHONY: uber_clean
-uber_clean:
+uber_clean: # Clean Uber Go style linter artifacts
 	$Q rm -f custom-gcl*
-	$Q echo "Cleaned custom linter artifacts"
+	$Q echo "Cleaned Uber Go style linter artifacts"
 `
 
 func main() {
@@ -81,10 +78,7 @@ func main() {
 	fmt.Println("     (First time takes ~1-2 minutes to build plugin)")
 	fmt.Println("")
 	fmt.Println("  2. View results:")
-	fmt.Println("     Violations will be reported in your code")
-	fmt.Println("")
-	fmt.Println("For more info:")
-	fmt.Println("  make uber_help")
+	fmt.Println("     Rule violations will be reported in your code")
 }
 
 func checkGolangciLint() error {
@@ -437,28 +431,48 @@ func promptForAction(filename string, options ...string) string {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Printf("  Options: %s: ", filename)
+		// Build display like: [(M)erge, (s)kip, (o)verwrite]
+		disp := make([]string, 0, len(options))
 		for i, opt := range options {
-			if i > 0 {
-				fmt.Print(", ")
+			if opt == "" {
+				continue
 			}
-			fmt.Print(opt)
+			runes := []rune(opt)
+			if len(runes) == 0 {
+				continue
+			}
+			first := string(runes[0])
+			rest := ""
+			if len(runes) > 1 {
+				rest = string(runes[1:])
+			}
+			if i == 0 {
+				// Default option: capitalise the shorthand
+				disp = append(disp, fmt.Sprintf("(%s)%s", strings.ToUpper(first), rest))
+			} else {
+				disp = append(disp, fmt.Sprintf("(%s)%s", strings.ToLower(first), rest))
+			}
 		}
-		fmt.Print(" [")
-		fmt.Print(strings.ToLower(options[0][:1]))
-		fmt.Print("]: ")
+
+		fmt.Printf("  Options: %s: [%s]: ", filename, strings.Join(disp, ", "))
 
 		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(strings.ToLower(input))
+		input = strings.TrimSpace(input)
+		lower := strings.ToLower(input)
 
 		// Default to first option if empty
-		if input == "" {
+		if lower == "" {
 			return options[0]
 		}
 
 		// Check if input matches any option (by first letter or full name)
 		for _, opt := range options {
-			if input == strings.ToLower(opt) || input == strings.ToLower(opt[:1]) {
+			if opt == "" {
+				continue
+			}
+			optLower := strings.ToLower(opt)
+			firstLower := strings.ToLower(string([]rune(opt)[0]))
+			if lower == optLower || lower == firstLower {
 				return opt
 			}
 		}
