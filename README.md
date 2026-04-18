@@ -95,29 +95,29 @@ plugins:
 **Step 2: Create a `.golangci.yml` to enable the plugin and rules**
 
 ```yaml
-version: "1"
+version: "2"
 
 linters:
-  disable-all: true
-  enable:
-    - uber-go-lint-style
+	disable-all: true
+	enable:
+		- uber-go-lint-style
 
 linters-settings:
-  custom:
-    uber-go-lint-style:
-      type: "module"
-      description: "Uber Go style guide linter"
-      original-url: "github.com/beltranaceves/uber-go-lint-style"
+	custom:
+		uber-go-lint-style:
+			type: "module"
+			description: "Uber Go style guide linter"
+			original-url: "github.com/beltranaceves/uber-go-lint-style"
+			# Disabled rules provided as YAML text. By default exclude TodoRule.
+			disabled_rules_yaml: |
+				- TodoRule
 
 severity:
-    # Recommended: many rules are heuristic or subjective. Configure the
-    # plugin to report findings as warnings by default so suggestions are
-    # visible to developers without failing CI builds. Projects can opt-in
-    # to stricter settings per-team or per-rule as needed.
-    rules:
-    - linters:
-            - uber-go-lint-style
-            severity: warning
+	default-severity: error
+	rules:
+		- linters:
+				- uber-go-lint-style
+			severity: warning
 ```
 
 **Disabling plugin rules via YAML**
@@ -151,18 +151,23 @@ golangci-lint custom
 To avoid running commands manually each time, add these targets to your `Makefile`:
 
 ```makefile
-.DEFAULT_GOAL := uber_lint
 
-# Run linter (builds plugin if needed)
-uber_lint:
-	@if [ ! -f "./custom-gcl" ]; then \
-		echo "Building custom golangci-lint with uber-go-lint-style plugin..."; \
-		golangci-lint custom || exit 1; \
-	fi
-	@./custom-gcl run
+```makefile
+
+.PHONY: uber_lint
+uber_lint: # Run Uber Go style linter (builds plugin if needed)
+	$Q echo "Running Uber Go style linter (with golangci-lint)..."
+	$Q if [ ! -f "./custom-gcl" ]; then echo "Building custom golangci-lint with uber-go-lint-style plugin..."; golangci-lint custom || exit 1; fi; echo "Running Uber Go style golangci-lint..." ;./custom-gcl run
+
+.PHONY: uber_clean
+uber_clean: # Clean Uber Go style linter artifacts
+	$Q rm -f custom-gcl*
+	$Q echo "Cleaned Uber Go style linter artifacts"
+
 ```
 
 This automatically builds the binary on first run and caches it for subsequent runs. Then simply:
+
 ```bash
 make uber_lint
 ```
