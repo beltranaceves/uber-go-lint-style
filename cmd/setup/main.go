@@ -18,7 +18,7 @@ plugins:
     version: 'latest'
 `
 
-const golangciConfig = `version: "1"
+const golangciConfig = `version: "2"
 
 linters:
   disable-all: true
