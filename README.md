@@ -312,3 +312,9 @@ This project implements style rules from [Uber's Go Style Guide](https://github.
   - [golang.org/x/tools/go/ssa](https://pkg.go.dev/golang.org/x/tools/go/ssa)
   - [go/ast](https://pkg.go.dev/go/ast)
   - [go/types](https://pkg.go.dev/go/types)
+
+## License
+
+This project is licensed under the Apache License, Version 2.0. See the
+[LICENSE](LICENSE) file for details. A NOTICE file is included with
+attribution where applicable.
