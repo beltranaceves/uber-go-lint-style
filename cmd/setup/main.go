@@ -42,32 +42,20 @@ severity:
       severity: warning
 `
 
-const makefile = `.DEFAULT_GOAL := uber_lint
+const makefile = `
 
-# Run linter (builds plugin if needed)
-uber_lint:
+.PHONY: uber_lint
+uber_lint: # Run Uber Go style linter (builds plugin if needed)
 	$Q if [ ! -f "./custom-gcl" ]; then \
 	$Q	echo "Building custom golangci-lint with uber-go-lint-style plugin..."; \
 	$Q	golangci-lint custom || exit 1; \
 	$Q fi
 	$Q ./custom-gcl run
 
-# View help
-uber_help:
-	@echo "Usage: make [target]"
-	@echo ""
-	@echo "Targets:"
-	@echo "  make uber_lint       Build plugin (if needed) and run linter"
-	@echo "  make uber_clean      Remove cached plugin binary"
-	@echo ""
-	@echo "Examples:"
-	@echo "  make uber_lint       # First run builds plugin, subsequent runs are fast"
-	@echo "  make uber_clean      # Reset and rebuild plugin next time"
-
-.PHONY: uber_lint uber_help uber_clean
+.PHONY: uber_clean
 uber_clean:
-	@rm -f custom-gcl*
-	@echo "Cleaned custom linter artifacts"
+	$Q rm -f custom-gcl*
+	$Q echo "Cleaned custom linter artifacts"
 `
 
 func main() {

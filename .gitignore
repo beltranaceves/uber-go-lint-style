@@ -12,4 +12,4 @@ coverage.txt
 coverage.out
 .vscode/
 uber-go-lint-style.test
-setup
+./setup
