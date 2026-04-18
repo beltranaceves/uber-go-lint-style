@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -99,9 +100,20 @@ func checkGolangciLint() error {
 
 func createConfigFiles() error {
 	// Create YAML config files with interactive prompts
+	// If the repo already contains any common golangci config filename
+	// prefer prompting on that file so the user gets offered a merge.
+	golangciNames := []string{".golangci.yml", "golangci.yml", ".golangci.yaml", "golangci.yaml"}
+	chosenGolangci := ".golangci.yml"
+	for _, n := range golangciNames {
+		if _, err := os.Stat(n); err == nil {
+			chosenGolangci = n
+			break
+		}
+	}
+
 	yamlFiles := map[string]string{
 		".custom-gcl.yml": customGclConfig,
-		".golangci.yml":   golangciConfig,
+		chosenGolangci:    golangciConfig,
 	}
 
 	for filename, content := range yamlFiles {
@@ -134,7 +146,7 @@ func createOrUpdateFile(filename, content string, isYAML bool) error {
 	// File exists - check for conflicts and prompt user
 	existingStr := string(existingContent)
 
-	if filename == ".golangci.yml" {
+	if isGolangciConfig(filename) {
 		fmt.Printf("  ℹ️  %s already exists\n", filename)
 		action := promptForAction(filename, "merge", "skip", "overwrite", "view")
 		switch action {
@@ -411,6 +423,13 @@ func extractVersionFromYAML(content string) string {
 	}
 
 	return ""
+}
+
+// isGolangciConfig returns true for common golangci config filenames.
+func isGolangciConfig(name string) bool {
+	b := filepath.Base(name)
+	b = strings.TrimPrefix(b, ".")
+	return b == "golangci.yml" || b == "golangci.yaml"
 }
 
 // promptForAction asks the user to choose an action for file handling.
