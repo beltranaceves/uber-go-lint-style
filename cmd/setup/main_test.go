@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 // TestExtractVersionFromYAML tests version extraction from YAML content.
@@ -54,9 +56,13 @@ linters:
 		},
 		{
 			name: "multiple versions, returns first",
-			content: `version: v0.1.0
-plugins:
-  version: v0.1.1
+			content: `plugins:
+  - module: github.com/example/other-plugin
+    version: v9.9.9
+  - module: github.com/beltranaceves/uber-go-lint-style
+    version: v0.1.0
+  - module: github.com/beltranaceves/uber-go-lint-style
+    version: v0.1.1
 `,
 			expected: "v0.1.0",
 		},
@@ -84,11 +90,13 @@ func TestHasYAMLCollision(t *testing.T) {
 			name: "no collision - same versions",
 			existing: `version: v0.1.1
 plugins:
-  version: v0.1.1
+  - module: github.com/beltranaceves/uber-go-lint-style
+    version: v0.1.1
 `,
 			new: `version: v0.1.1
 plugins:
-  version: v0.1.1
+  - module: github.com/beltranaceves/uber-go-lint-style
+    version: v0.1.1
 `,
 			expected: false,
 		},
@@ -96,11 +104,13 @@ plugins:
 			name: "collision detected - different versions",
 			existing: `version: v0.1.0
 plugins:
-  version: v0.1.0
+  - module: github.com/beltranaceves/uber-go-lint-style
+    version: v0.1.0
 `,
 			new: `version: v0.1.1
 plugins:
-  version: v0.1.1
+  - module: github.com/beltranaceves/uber-go-lint-style
+    version: v0.1.1
 `,
 			expected: true,
 		},
@@ -111,7 +121,8 @@ plugins:
 `,
 			new: `version: v0.1.1
 plugins:
-  version: v0.1.1
+  - module: github.com/beltranaceves/uber-go-lint-style
+    version: v0.1.1
 `,
 			expected: false,
 		},
@@ -119,7 +130,8 @@ plugins:
 			name: "no collision - new has no version",
 			existing: `version: v0.1.0
 plugins:
-  version: v0.1.0
+  - module: github.com/beltranaceves/uber-go-lint-style
+    version: v0.1.0
 `,
 			new: `linters:
   disable-all: true
@@ -429,8 +441,8 @@ func TestIndent_EmptyLines(t *testing.T) {
 func TestVersionExtraction_RealConfigs(t *testing.T) {
 	// Test with actual customGclConfig
 	version := extractVersionFromYAML(customGclConfig)
-	if version != "v0.1.1" {
-		t.Errorf("extractVersionFromYAML(customGclConfig) = %q, want %q", version, "v0.1.1")
+	if version != "latest" {
+		t.Errorf("extractVersionFromYAML(customGclConfig) = %q, want %q", version, "latest")
 	}
 
 	// Test with actual golangciConfig
@@ -440,6 +452,165 @@ func TestVersionExtraction_RealConfigs(t *testing.T) {
 		// This is expected behavior - we look for the plugin version specifically
 		t.Logf("note: golangciConfig doesn't have plugin version in expected format")
 	}
+}
+
+func TestGolangCIConfig_IsValidYAML(t *testing.T) {
+	var cfg map[string]any
+	if err := yaml.Unmarshal([]byte(golangciConfig), &cfg); err != nil {
+		t.Fatalf("golangciConfig must be valid YAML: %v", err)
+	}
+
+	linters := mustMapValue(t, cfg, "linters")
+	if _, ok := linters["enable"]; !ok {
+		t.Fatalf("golangciConfig must define linters.enable")
+	}
+
+	lintersSettings := mustMapValue(t, cfg, "linters-settings")
+	custom := mustMapValue(t, lintersSettings, "custom")
+	if _, ok := custom["uber-go-lint-style"]; !ok {
+		t.Fatalf("golangciConfig must define custom settings for uber-go-lint-style")
+	}
+}
+
+func TestMergeGolangCIConfig_MergesWithoutOverwriting(t *testing.T) {
+	existing := `version: "2"
+linters:
+  disable-all: false
+  enable:
+    - govet
+linters-settings:
+  custom:
+    existing-linter:
+      type: module
+severity:
+  default-severity: error
+  rules:
+    - linters:
+        - govet
+      severity: error
+`
+
+	merged, changed, err := mergeGolangCIConfig(existing, golangciConfig)
+	if err != nil {
+		t.Fatalf("mergeGolangCIConfig returned error: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected merge to report changes")
+	}
+
+	cfg := map[string]any{}
+	if err := yaml.Unmarshal([]byte(merged), &cfg); err != nil {
+		t.Fatalf("failed to parse merged YAML: %v", err)
+	}
+
+	linters := mustMapValue(t, cfg, "linters")
+	if disableAll, ok := linters["disable-all"].(bool); !ok || disableAll {
+		t.Fatalf("expected existing linters.disable-all=false to be preserved")
+	}
+
+	enabled := mustSliceValue(t, linters, "enable")
+	assertContainsString(t, enabled, "govet")
+	assertContainsString(t, enabled, "uber-go-lint-style")
+
+	settings := mustMapValue(t, cfg, "linters-settings")
+	custom := mustMapValue(t, settings, "custom")
+	_ = mustMapValue(t, custom, "existing-linter")
+	plugin := mustMapValue(t, custom, "uber-go-lint-style")
+	if plugin["type"] != "module" {
+		t.Fatalf("expected plugin type=module, got %v", plugin["type"])
+	}
+
+	severity := mustMapValue(t, cfg, "severity")
+	rules := mustSliceValue(t, severity, "rules")
+	if !hasSeverityRuleForLinter(rules, "uber-go-lint-style", "warning") {
+		t.Fatalf("expected severity warning rule for uber-go-lint-style")
+	}
+}
+
+func TestMergeGolangCIConfig_NoOpWhenAlreadyConfigured(t *testing.T) {
+	existing := `linters:
+  enable:
+    - uber-go-lint-style
+linters-settings:
+  custom:
+    uber-go-lint-style:
+      type: module
+      description: Uber Go style guide linter
+      original-url: github.com/beltranaceves/uber-go-lint-style
+      disabled_rules_yaml: |
+        - TodoRule
+severity:
+  rules:
+    - linters:
+        - uber-go-lint-style
+      severity: warning
+`
+
+	merged, changed, err := mergeGolangCIConfig(existing, golangciConfig)
+	if err != nil {
+		t.Fatalf("mergeGolangCIConfig returned error: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected no changes when config is already compatible")
+	}
+	if merged != existing {
+		t.Fatalf("expected merged output to equal existing input when unchanged")
+	}
+}
+
+func mustMapValue(t *testing.T, parent map[string]any, key string) map[string]any {
+	t.Helper()
+	value, ok := parent[key].(map[string]any)
+	if !ok {
+		t.Fatalf("expected map at key %q, got %T", key, parent[key])
+	}
+	return value
+}
+
+func mustSliceValue(t *testing.T, parent map[string]any, key string) []any {
+	t.Helper()
+	value, ok := parent[key].([]any)
+	if !ok {
+		t.Fatalf("expected slice at key %q, got %T", key, parent[key])
+	}
+	return value
+}
+
+func assertContainsString(t *testing.T, values []any, want string) {
+	t.Helper()
+	for _, value := range values {
+		if s, ok := value.(string); ok && s == want {
+			return
+		}
+	}
+	t.Fatalf("expected slice to contain %q, got %v", want, values)
+}
+
+func hasSeverityRuleForLinter(rules []any, linterName, severityName string) bool {
+	for _, rule := range rules {
+		ruleMap, ok := rule.(map[string]any)
+		if !ok {
+			continue
+		}
+		linters, ok := ruleMap["linters"].([]any)
+		if !ok {
+			continue
+		}
+		foundLinter := false
+		for _, linter := range linters {
+			if linterStr, ok := linter.(string); ok && linterStr == linterName {
+				foundLinter = true
+				break
+			}
+		}
+		if !foundLinter {
+			continue
+		}
+		if ruleMap["severity"] == severityName {
+			return true
+		}
+	}
+	return false
 }
 
 // TestCollisionDetection_RealConfigs tests collision with actual configs.
