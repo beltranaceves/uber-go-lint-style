@@ -51,7 +51,7 @@ version: v1.59.0
 
 plugins:
   - module: 'github.com/beltranaceves/uber-go-lint-style'
-    version: v0.1.1
+    version: 'latest'
 ```
 
 For local development, replace `version: v0.1.1` with `path: /path/to/uber-go-lint-style`.
