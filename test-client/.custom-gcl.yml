@@ -1,9 +1,5 @@
 version: v1.59.0
 
 plugins:
-  # Load uber-go-lint-style plugin from repository (real client)
   - module: 'github.com/beltranaceves/uber-go-lint-style'
     version: 'latest'
-  # Local development (disabled):
-  # - module: 'github.com/beltranaceves/uber-go-lint-style'
-  #   path: ../

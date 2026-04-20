@@ -10,16 +10,16 @@ import (
 // BAD: Using sync/atomic with raw int32
 func badAtomicInt32() {
 	var counter int32
-	atomic.StoreInt32(&counter, 1)    // ❌ should use go.uber.org/atomic
-	val := atomic.LoadInt32(&counter) // ❌ should use go.uber.org/atomic
+	atomic.StoreInt32(&counter, 1)    // use go.uber.org/atomic instead of sync/atomic for operations on raw types
+	val := atomic.LoadInt32(&counter) // use go.uber.org/atomic instead of sync/atomic for operations on raw types
 	_ = val
 }
 
 // BAD: Using sync/atomic with raw uint64
 func badAtomicUint64() {
 	var id uint64
-	atomic.StoreUint64(&id, 100)      // ❌ should use go.uber.org/atomic
-	current := atomic.LoadUint64(&id) // ❌ should use go.uber.org/atomic
+	atomic.StoreUint64(&id, 100)      // use go.uber.org/atomic instead of sync/atomic for operations on raw types
+	current := atomic.LoadUint64(&id) // use go.uber.org/atomic instead of sync/atomic for operations on raw types
 	_ = current
 }
 
