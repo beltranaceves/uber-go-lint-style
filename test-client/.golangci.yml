@@ -1,9 +1,64 @@
 version: "2"
 
 linters:
-  disable-all: true
+  default: none
   enable:
-    - uber-go-lint-style
+    - atomic
+    - builtin_name
+    - channel_size
+    - container_capacity
+    - container_copy
+    - decl_group
+    - defer_clean
+    - else_unnecessary
+    - embed_public
+    - enum_start
+    - error_name
+    - error_once
+    - error_type
+    - error_wrap
+    - exit_main
+    - exit_once
+    - function_name
+    - function_order
+    - functional_option
+    - global_decl
+    - global_mut
+    - global_name
+    - goroutine_exit
+    - goroutine_forget
+    - goroutine_init
+    - import_alias
+    - import_group
+    - init
+    - interface_compliance
+    - interface_pointer
+    - interface_receiver
+    - line_length
+    - map_init
+    - mutex_zero_value
+    - nest_less
+    - no_panic
+    - package_name
+    - param_naked
+    - printf_const
+    - printf_name
+    - slice_nil
+    - strconv
+    - string_byte_slice
+    - string_escape
+    - struct_embed
+    - struct_field_key
+    - struct_field_zero
+    - struct_pointer
+    - struct_tag
+    - struct_zero
+    - table_less_complex
+    - time_usage
+    - todo
+    - type_assert
+    - var_decl
+    - var_scope
 
 linters-settings:
   custom:
@@ -14,10 +69,3 @@ linters-settings:
       # Disabled rules provided as YAML text. By default exclude TodoRule.
       disabled_rules_yaml: |
         - TodoRule
-
-severity:
-  default-severity: warning
-  rules:
-    - linters:
-        - uber-go-lint-style
-      severity: warning

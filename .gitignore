@@ -13,3 +13,4 @@ coverage.out
 .vscode/
 uber-go-lint-style.test
 ./setup
+cadence/
