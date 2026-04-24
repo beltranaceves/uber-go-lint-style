@@ -1,0 +1,5 @@
+version: v1.59.0
+
+plugins:
+  - module: 'github.com/beltranaceves/uber-go-lint-style'
+    version: 'latest'
