@@ -1,6 +1,0 @@
-version: v2.11.4
-
-plugins:
-  - module: 'github.com/beltranaceves/uber-go-lint-style'
-    import: 'github.com/beltranaceves/uber-go-lint-style'
-    version: 'latest'

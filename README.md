@@ -72,12 +72,6 @@ Then simply:
 make uber_lint
 ```
 
-> [!NOTE]  
-> This option requires a released version. If you want to test locally first, clone the repo and run:
-> ```bash
-> go run ./cmd/setup
-> ```
-
 ### Setup Option 2: Manual Configuration
 
 If you prefer manual setup, follow these steps:
