@@ -15,6 +15,7 @@ const customGclConfig = `version: v1.59.0
 
 plugins:
   - module: 'github.com/beltranaceves/uber-go-lint-style'
+	import: 'github.com/beltranaceves/uber-go-lint-style'
     version: 'latest'
 `
 
@@ -75,7 +76,7 @@ func main() {
 	fmt.Println("✅ Setup complete!")
 	fmt.Println("Next steps:")
 	fmt.Println("  1. Run: make uber_lint")
-	fmt.Println("     (First time takes ~1-2 minutes to build plugin)")
+	fmt.Println("     (The first time it takes ~1-2 minutes to build the plugin)")
 	fmt.Println("")
 	fmt.Println("  2. View results:")
 	fmt.Println("     Rule violations will be reported in your code")
