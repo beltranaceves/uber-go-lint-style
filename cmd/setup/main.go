@@ -2,11 +2,15 @@ package main
 
 import (
 	"bufio"
+	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -94,6 +98,9 @@ func checkGolangciLint() error {
 }
 
 func createConfigFiles() error {
+	// Determine latest plugin release (fallback to 'latest' when unavailable)
+	release := getLatestReleaseVersion("beltranaceves", "uber-go-lint-style")
+
 	// Create YAML config files with interactive prompts
 	// If the repo already contains any common golangci config filename
 	// prefer prompting on that file so the user gets offered a merge.
@@ -106,9 +113,17 @@ func createConfigFiles() error {
 		}
 	}
 
+	// Replace plugin version placeholders with the discovered release tag when available
+	customGcl := customGclConfig
+	golangciCfg := golangciConfig
+	if release != "" {
+		customGcl = strings.Replace(customGcl, "version: 'latest'", fmt.Sprintf("version: '%s'", release), 1)
+		golangciCfg = strings.Replace(golangciCfg, "version: 'latest'", fmt.Sprintf("version: '%s'", release), 1)
+	}
+
 	yamlFiles := map[string]string{
-		".custom-gcl.yml": customGclConfig,
-		chosenGolangci:    golangciConfig,
+		".custom-gcl.yml": customGcl,
+		chosenGolangci:    golangciCfg,
 	}
 
 	for filename, content := range yamlFiles {
@@ -123,6 +138,40 @@ func createConfigFiles() error {
 	}
 
 	return nil
+}
+
+// getLatestReleaseVersion queries the GitHub Releases API for the latest tag.
+// Returns empty string on error (caller should fallback to 'latest').
+func getLatestReleaseVersion(owner, repo string) string {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return ""
+	}
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return ""
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return ""
+	}
+
+	var data struct {
+		TagName string `json:"tag_name"`
+	}
+	dec := json.NewDecoder(resp.Body)
+	if err := dec.Decode(&data); err != nil {
+		return ""
+	}
+
+	return strings.TrimSpace(data.TagName)
 }
 
 // createOrUpdateFile handles creation and updating of files with user interaction.
@@ -418,6 +467,9 @@ func extractVersionFromYAML(content string) string {
 	if err := yaml.Unmarshal([]byte(content), &cfg); err != nil {
 		return ""
 	}
+
+	// getLatestReleaseVersion queries the GitHub Releases API for the latest tag.
+	// Returns empty string on error (caller should fallback to 'latest').
 
 	for _, plugin := range cfg.Plugins {
 		if strings.Contains(plugin.Module, "uber-go-lint-style") {
