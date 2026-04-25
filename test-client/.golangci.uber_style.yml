@@ -13,11 +13,11 @@ linters:
         # Disabled rules provided as YAML text. By default exclude TodoRule.
         settings:
           disabled_rules_yaml: |
-            - TodoRule
+            - todo
 
 severity:
-  default: error
+  default: info
   rules:
     - linters:
         - uber-go-lint-style
-      severity: warning
+      severity: info

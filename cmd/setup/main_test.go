@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -472,6 +473,22 @@ func TestGolangCIConfig_IsValidYAML(t *testing.T) {
 	if _, ok := custom["uber-go-lint-style"]; !ok {
 		t.Fatalf("golangciConfig must define custom settings for uber-go-lint-style")
 	}
+
+	// Verify disabled_rules_yaml uses analyzer names (lowercase) and severity default
+	plugin := mustMapValue(t, custom, "uber-go-lint-style")
+	settings := mustMapValue(t, plugin, "settings")
+	dr, ok := settings["disabled_rules_yaml"].(string)
+	if !ok {
+		t.Fatalf("expected disabled_rules_yaml to be a string, got %T", settings["disabled_rules_yaml"])
+	}
+	if !strings.Contains(dr, "todo") {
+		t.Fatalf("expected disabled_rules_yaml to mention 'todo', got %q", dr)
+	}
+
+	severity := mustMapValue(t, cfg, "severity")
+	if def, ok := severity["default"].(string); !ok || def != "info" {
+		t.Fatalf("expected severity.default = info, got %v", severity["default"])
+	}
 }
 
 func TestMergeGolangCIConfig_MergesWithoutOverwriting(t *testing.T) {
@@ -541,20 +558,19 @@ func TestMergeGolangCIConfig_NoOpWhenAlreadyConfigured(t *testing.T) {
 				"uber-go-lint-style": map[string]any{
 					"type":         "module",
 					"description":  "Uber Go style guide linter",
-					"path":         "./custom-gcl.so",
 					"original-url": "github.com/beltranaceves/uber-go-lint-style",
 					"settings": map[string]any{
-						"disabled_rules_yaml": "- TodoRule\n",
+						"disabled_rules_yaml": "- todo\n",
 					},
 				},
 			},
 		},
 		"severity": map[string]any{
-			"default": "error",
+			"default": "info",
 			"rules": []any{
 				map[string]any{
 					"linters":  []any{"uber-go-lint-style"},
-					"severity": "warning",
+					"severity": "info",
 				},
 			},
 		},
