@@ -17,14 +17,15 @@ func TestExtractVersionFromYAML(t *testing.T) {
 		expected string
 	}{
 		{
-			name: "valid version v0.1.1",
+			name: "plugin version latest",
 			content: `version: v1.59.0
 
 plugins:
-  - module: 'github.com/beltranaceves/uber-go-lint-style'
-    version: v0.1.1
+	- module: 'github.com/beltranaceves/uber-go-lint-style'
+		import: 'github.com/beltranaceves/uber-go-lint-style'
+		version: 'latest'
 `,
-			expected: "v0.1.1",
+			expected: "",
 		},
 		{
 			name: "valid version v0.2.0",
@@ -465,7 +466,8 @@ func TestGolangCIConfig_IsValidYAML(t *testing.T) {
 		t.Fatalf("golangciConfig must define linters.enable")
 	}
 
-	lintersSettings := mustMapValue(t, cfg, "linters-settings")
+	// New golangci config shape nests plugin settings under `linters.settings.custom`.
+	lintersSettings := mustMapValue(t, linters, "settings")
 	custom := mustMapValue(t, lintersSettings, "custom")
 	if _, ok := custom["uber-go-lint-style"]; !ok {
 		t.Fatalf("golangciConfig must define custom settings for uber-go-lint-style")
@@ -528,23 +530,41 @@ severity:
 }
 
 func TestMergeGolangCIConfig_NoOpWhenAlreadyConfigured(t *testing.T) {
-	existing := `linters:
-  enable:
-    - uber-go-lint-style
-linters-settings:
-  custom:
-    uber-go-lint-style:
-      type: module
-      description: Uber Go style guide linter
-      original-url: github.com/beltranaceves/uber-go-lint-style
-      disabled_rules_yaml: |
-        - TodoRule
-severity:
-  rules:
-    - linters:
-        - uber-go-lint-style
-      severity: warning
-`
+	existingMap := map[string]any{
+		"version": "2",
+		"linters": map[string]any{
+			"disable-all": false,
+			"enable":      []any{"uber-go-lint-style"},
+		},
+		"linters-settings": map[string]any{
+			"custom": map[string]any{
+				"uber-go-lint-style": map[string]any{
+					"type":         "module",
+					"description":  "Uber Go style guide linter",
+					"path":         "./custom-gcl.so",
+					"original-url": "github.com/beltranaceves/uber-go-lint-style",
+					"settings": map[string]any{
+						"disabled_rules_yaml": "- TodoRule\n",
+					},
+				},
+			},
+		},
+		"severity": map[string]any{
+			"default-severity": "error",
+			"rules": []any{
+				map[string]any{
+					"linters":  []any{"uber-go-lint-style"},
+					"severity": "warning",
+				},
+			},
+		},
+	}
+
+	b, err := yaml.Marshal(existingMap)
+	if err != nil {
+		t.Fatalf("failed to marshal existing map: %v", err)
+	}
+	existing := string(b)
 
 	merged, changed, err := mergeGolangCIConfig(existing, golangciConfig)
 	if err != nil {

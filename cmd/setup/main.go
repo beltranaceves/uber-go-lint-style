@@ -11,11 +11,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const customGclConfig = `version: v1.59.0
+const customGclConfig = `version: v2.11.4
 
 plugins:
   - module: 'github.com/beltranaceves/uber-go-lint-style'
-	import: 'github.com/beltranaceves/uber-go-lint-style'
+    import: 'github.com/beltranaceves/uber-go-lint-style'
     version: 'latest'
 `
 
@@ -25,16 +25,17 @@ linters:
   disable-all: true
   enable:
     - uber-go-lint-style
-
-linters-settings:
-  custom:
-    uber-go-lint-style:
-      type: "module"
-      description: "Uber Go style guide linter"
-      original-url: "github.com/beltranaceves/uber-go-lint-style"
-      # Disabled rules provided as YAML text. By default exclude TodoRule.
-      disabled_rules_yaml: |
-        - TodoRule
+  settings:
+    custom:
+      uber-go-lint-style:
+        type: "module"
+        description: "Uber Go style guide linter"
+        path: "./custom-gcl.so"
+        original-url: "github.com/beltranaceves/uber-go-lint-style"
+        # Disabled rules provided as YAML text. By default exclude TodoRule.
+        settings:
+          disabled_rules_yaml: |
+            - TodoRule
 
 severity:
   default-severity: error
@@ -343,19 +344,27 @@ func mergeSeverityRules(cfg map[string]any) bool {
 }
 
 func getPluginRuleSettings(pluginCfg map[string]any) map[string]any {
-	lintersSettings, ok := pluginCfg["linters-settings"].(map[string]any)
-	if !ok {
-		return nil
+	// Support old top-level `linters-settings.custom` shape
+	if lintersSettings, ok := pluginCfg["linters-settings"].(map[string]any); ok {
+		if custom, ok := lintersSettings["custom"].(map[string]any); ok {
+			if ruleCfg, ok := custom["uber-go-lint-style"].(map[string]any); ok {
+				return ruleCfg
+			}
+		}
 	}
-	custom, ok := lintersSettings["custom"].(map[string]any)
-	if !ok {
-		return nil
+
+	// Support nested `linters.settings.custom` shape (golangci-lint v2 style)
+	if linters, ok := pluginCfg["linters"].(map[string]any); ok {
+		if settings, ok := linters["settings"].(map[string]any); ok {
+			if custom, ok := settings["custom"].(map[string]any); ok {
+				if ruleCfg, ok := custom["uber-go-lint-style"].(map[string]any); ok {
+					return ruleCfg
+				}
+			}
+		}
 	}
-	ruleCfg, ok := custom["uber-go-lint-style"].(map[string]any)
-	if !ok {
-		return nil
-	}
-	return ruleCfg
+
+	return nil
 }
 
 func ensureMap(root map[string]any, key string) map[string]any {
@@ -413,7 +422,30 @@ func extractVersionFromYAML(content string) string {
 
 	for _, plugin := range cfg.Plugins {
 		if strings.Contains(plugin.Module, "uber-go-lint-style") {
-			return strings.TrimSpace(plugin.Version)
+			if v := strings.TrimSpace(plugin.Version); v != "" {
+				return v
+			}
+		}
+	}
+
+	// Fallback: scan text for a module line and nearby version line (more tolerant)
+	lines := strings.Split(content, "\n")
+	for i, line := range lines {
+		if strings.Contains(line, "uber-go-lint-style") && strings.Contains(line, "module") {
+			// look ahead a few lines for a version field
+			for j := i; j < i+6 && j < len(lines); j++ {
+				if strings.Contains(lines[j], "version:") {
+					parts := strings.SplitN(lines[j], ":", 2)
+					if len(parts) < 2 {
+						continue
+					}
+					val := strings.TrimSpace(parts[1])
+					val = strings.Trim(val, " '\t\"`")
+					if val != "" {
+						return val
+					}
+				}
+			}
 		}
 	}
 
