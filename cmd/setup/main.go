@@ -22,7 +22,7 @@ plugins:
 const golangciConfig = `version: "2"
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - uber-go-lint-style
   settings:
@@ -30,7 +30,6 @@ linters:
       uber-go-lint-style:
         type: "module"
         description: "Uber Go style guide linter"
-        path: "./custom-gcl.so"
         original-url: "github.com/beltranaceves/uber-go-lint-style"
         # Disabled rules provided as YAML text. By default exclude TodoRule.
         settings:
@@ -38,7 +37,7 @@ linters:
             - TodoRule
 
 severity:
-  default-severity: error
+  default: error
   rules:
     - linters:
         - uber-go-lint-style

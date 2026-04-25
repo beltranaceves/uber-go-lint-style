@@ -485,7 +485,7 @@ linters-settings:
     existing-linter:
       type: module
 severity:
-  default-severity: error
+  default: error
   rules:
     - linters:
         - govet
@@ -550,7 +550,7 @@ func TestMergeGolangCIConfig_NoOpWhenAlreadyConfigured(t *testing.T) {
 			},
 		},
 		"severity": map[string]any{
-			"default-severity": "error",
+			"default": "error",
 			"rules": []any{
 				map[string]any{
 					"linters":  []any{"uber-go-lint-style"},
