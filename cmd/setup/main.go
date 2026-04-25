@@ -1,3 +1,37 @@
+// Package main implements a small interactive setup helper that writes
+// configuration files to help install and run the `uber-go-lint-style`
+// golangci-lint plugin.
+//
+// # Diagnostics and environment flags
+//
+//   - `SETUP_VERBOSE`: when non-empty the program prints extra diagnostic
+//     information (detected release, dry-run previews, and merge diagnostics).
+//
+//   - `SETUP_DRY_RUN`: when non-empty the program will not write files to
+//     disk; instead it prints what it would create/merge. Useful for
+//     reproducing the exact YAML that would be written.
+//
+// # Version resolution
+//
+// The setup tool attempts to pin the plugin `version:` written into
+// generated YAML so that what it writes matches what `go run
+// github.com/.../cmd/setup@latest` would actually resolve. To do that it
+// first invokes `go list -m -json <module>@latest` (this mirrors the
+// Go toolchain / module proxy resolution). If that fails it falls back to
+// querying the GitHub Releases API (`/repos/:owner/:repo/releases/latest`).
+//
+// Notes / debugging tips:
+//   - To force the Go toolchain to fetch from the VCS instead of a proxy,
+//     run with `GOPROXY=direct`.
+//   - To preview what would be written without changing files run:
+//     `SETUP_VERBOSE=1 SETUP_DRY_RUN=1 go run ./cmd/setup`
+//   - The program currently does not consume `GITHUB_TOKEN`; setting it may
+//     increase API limits but is not wired in yet.
+//
+// These diagnostics were added because `go run <module>@latest` and
+// GitHub "releases" can diverge when proxies or tag naming differs; the
+// dual-check approach improves the chance the file contains the version
+// that `go` will actually use.
 package main
 
 import (
@@ -100,6 +134,13 @@ func checkGolangciLint() error {
 func createConfigFiles() error {
 	// Determine latest plugin release (fallback to 'latest' when unavailable)
 	release := getLatestReleaseVersion("beltranaceves", "uber-go-lint-style")
+	if isVerbose() {
+		if release == "" {
+			fmt.Printf("  ℹ️  Detected release: <empty> (will use 'latest' literal)\n")
+		} else {
+			fmt.Printf("  ℹ️  Detected release: %s\n", release)
+		}
+	}
 
 	// Create YAML config files with interactive prompts
 	// If the repo already contains any common golangci config filename
@@ -143,6 +184,13 @@ func createConfigFiles() error {
 // getLatestReleaseVersion queries the GitHub Releases API for the latest tag.
 // Returns empty string on error (caller should fallback to 'latest').
 func getLatestReleaseVersion(owner, repo string) string {
+	// Prefer Go's module resolution (what `go run ...@latest` will actually use).
+	modulePath := fmt.Sprintf("github.com/%s/%s", owner, repo)
+	if v := getModuleVersionViaGoList(modulePath); v != "" {
+		return v
+	}
+
+	// Fallback to GitHub Releases API when `go list` is unavailable.
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -174,12 +222,47 @@ func getLatestReleaseVersion(owner, repo string) string {
 	return strings.TrimSpace(data.TagName)
 }
 
+// getModuleVersionViaGoList invokes `go list -m -json <module>@latest` and
+// returns the resolved Version (or empty string on error). This mirrors the
+// version `go run <module>@latest` will pick via GOPROXY/module proxy.
+func getModuleVersionViaGoList(module string) string {
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "go", "list", "-m", "-json", module+"@latest")
+	cmd.Env = os.Environ()
+	out, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+
+	var info struct {
+		Version string `json:"Version"`
+	}
+	if err := json.Unmarshal(out, &info); err != nil {
+		return ""
+	}
+	return strings.TrimSpace(info.Version)
+}
+
 // createOrUpdateFile handles creation and updating of files with user interaction.
 // isYAML indicates if collision detection should attempt YAML parsing.
 func createOrUpdateFile(filename, content string, isYAML bool) error {
+	dry := isDryRun()
+	verbose := isVerbose()
+
 	existingContent, err := os.ReadFile(filename)
 	if err != nil {
 		// File doesn't exist, create it
+		if dry {
+			if verbose {
+				fmt.Printf("  DRY-RUN: would create %s with content:\n%s\n", filename, indent(content, "    "))
+			} else {
+				fmt.Printf("  DRY-RUN: would create %s\n", filename)
+			}
+			return nil
+		}
+
 		if err := os.WriteFile(filename, []byte(content), 0644); err != nil {
 			return fmt.Errorf("failed to create %s: %w", filename, err)
 		}
@@ -219,6 +302,15 @@ func createOrUpdateFile(filename, content string, isYAML bool) error {
 				return nil
 			}
 
+			if dry {
+				if verbose {
+					fmt.Printf("  DRY-RUN: would merge into %s resulting content:\n%s\n", filename, indent(merged, "    "))
+				} else {
+					fmt.Printf("  DRY-RUN: would merge into %s\n", filename)
+				}
+				return nil
+			}
+
 			if err := os.WriteFile(filename, []byte(merged), 0644); err != nil {
 				return fmt.Errorf("failed to merge %s: %w", filename, err)
 			}
@@ -226,6 +318,14 @@ func createOrUpdateFile(filename, content string, isYAML bool) error {
 			return nil
 
 		case "overwrite":
+			if dry {
+				if verbose {
+					fmt.Printf("  DRY-RUN: would overwrite %s with:\n%s\n", filename, indent(content, "    "))
+				} else {
+					fmt.Printf("  DRY-RUN: would overwrite %s\n", filename)
+				}
+				return nil
+			}
 			return os.WriteFile(filename, []byte(content), 0644)
 
 		case "view":
@@ -258,6 +358,14 @@ func createOrUpdateFile(filename, content string, isYAML bool) error {
 		action := promptForAction(filename, "overwrite", "skip", "view")
 		switch action {
 		case "overwrite":
+			if dry {
+				if verbose {
+					fmt.Printf("  DRY-RUN: would overwrite %s with:\n%s\n", filename, indent(content, "    "))
+				} else {
+					fmt.Printf("  DRY-RUN: would overwrite %s\n", filename)
+				}
+				return nil
+			}
 			return os.WriteFile(filename, []byte(content), 0644)
 		case "view":
 			fmt.Printf("  Existing content:\n%s\n", indent(existingStr, "    "))
@@ -276,6 +384,14 @@ func createOrUpdateFile(filename, content string, isYAML bool) error {
 	fmt.Printf("  ℹ️  %s already exists\n", filename)
 	action := promptForAction(filename, "skip", "overwrite")
 	if action == "overwrite" {
+		if dry {
+			if verbose {
+				fmt.Printf("  DRY-RUN: would overwrite %s with:\n%s\n", filename, indent(content, "    "))
+			} else {
+				fmt.Printf("  DRY-RUN: would overwrite %s\n", filename)
+			}
+			return nil
+		}
 		return os.WriteFile(filename, []byte(content), 0644)
 	}
 	fmt.Printf("  ℹ️  Skipped %s\n", filename)
@@ -568,6 +684,10 @@ func promptForAction(filename string, options ...string) string {
 func createOrMergeMakefile() error {
 	const makefileName = "Makefile"
 
+	if isVerbose() {
+		fmt.Printf("  ℹ️  createOrMergeMakefile verbose enabled\n")
+	}
+
 	// Check if Makefile exists
 	content, err := os.ReadFile(makefileName)
 	if err != nil {
@@ -614,6 +734,15 @@ func createOrMergeMakefile() error {
 		}
 		mergedContent += separator + makefile
 
+		if isDryRun() {
+			if isVerbose() {
+				fmt.Printf("  DRY-RUN: would merge into %s resulting content:\n%s\n", makefileName, indent(mergedContent, "    "))
+			} else {
+				fmt.Printf("  DRY-RUN: would merge into %s\n", makefileName)
+			}
+			return nil
+		}
+
 		if err := os.WriteFile(makefileName, []byte(mergedContent), 0644); err != nil {
 			return fmt.Errorf("failed to merge %s: %w", makefileName, err)
 		}
@@ -638,4 +767,12 @@ func indent(text string, prefix string) string {
 		}
 	}
 	return strings.Join(lines, "\n")
+}
+
+func isVerbose() bool {
+	return os.Getenv("SETUP_VERBOSE") != ""
+}
+
+func isDryRun() bool {
+	return os.Getenv("SETUP_DRY_RUN") != ""
 }
