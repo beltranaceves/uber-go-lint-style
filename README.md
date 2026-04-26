@@ -192,7 +192,7 @@ uber-go-lint-style/
 ### Adding a New Rule
 
 > [!NOTE]
-> If you are using coding Agents, or looking for more detailed guidance on rule structure, performance patterns, and testing conventions, there are two included [skills](.github/skills/):
+> If you are using coding Agents, or looking for more detailed guidance on rule structure, performance patterns, and testing conventions, there are two included [skills](.agents/skills/):
 > - `.agents/skills/develop-linter-rules/SKILL.md` covers rule structure, analysis approaches, performance considerations, and examples.
 > - `.agents/skills/create-linter-tests/SKILL.md` helps scaffold test cases and edge-case coverage to reduce boilerplate.
 
