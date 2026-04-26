@@ -193,8 +193,8 @@ uber-go-lint-style/
 
 > [!NOTE]
 > If you are using coding Agents, or looking for more detailed guidance on rule structure, performance patterns, and testing conventions, there are two included [skills](.github/skills/):
-> - `.github/skills/develop-linter-rules/SKILL.md` covers rule structure, analysis approaches, performance considerations, and examples.
-> - `.github/skills/create-linter-tests/SKILL.md` helps scaffold test cases and edge-case coverage to reduce boilerplate.
+> - `.agents/skills/develop-linter-rules/SKILL.md` covers rule structure, analysis approaches, performance considerations, and examples.
+> - `.agents/skills/create-linter-tests/SKILL.md` helps scaffold test cases and edge-case coverage to reduce boilerplate.
 
 1. Create a new file in `rules/` (e.g., `rules/myrule.go`):
 
