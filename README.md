@@ -79,11 +79,12 @@ If you prefer manual setup, follow these steps:
 **Step 1: Create `.custom-gcl.yml`**
 
 ```yaml
-version: v1.59.0
+version: v2.11.4
 
 plugins:
-  - module: 'github.com/beltranaceves/uber-go-lint-style'
-    version: 'latest'
+	- module: 'github.com/beltranaceves/uber-go-lint-style'
+		import: 'github.com/beltranaceves/uber-go-lint-style'
+		version: 'latest'
 ```
 
 **Step 2: Create a `.golangci.yml` to enable the plugin and rules**
@@ -92,22 +93,22 @@ plugins:
 version: "2"
 
 linters:
-	disable-all: true
+	default: none
 	enable:
 		- uber-go-lint-style
-
-linters-settings:
-	custom:
-		uber-go-lint-style:
-			type: "module"
-			description: "Uber Go style guide linter"
-			original-url: "github.com/beltranaceves/uber-go-lint-style"
-			# Disabled rules provided as YAML text. By default exclude TodoRule.
-			disabled_rules_yaml: |
-				- TodoRule
+	settings:
+		custom:
+			uber-go-lint-style:
+				type: "module"
+				description: "Uber Go style guide linter"
+				original-url: "github.com/beltranaceves/uber-go-lint-style"
+				# Disabled rules provided as YAML text. By default exclude TodoRule.
+				settings:
+					disabled_rules_yaml: |
+						- todo
 
 severity:
-	default-severity: error
+	default: info
 	rules:
 		- linters:
 				- uber-go-lint-style
@@ -137,7 +138,7 @@ linters-settings:
 
 ```bash
 golangci-lint custom
-./custom-gcl run ./...
+./custom-gcl run --config .golangci.uber_style.yml
 ```
 
 **Step 4: Add a Makefile (optional)**
@@ -145,13 +146,10 @@ golangci-lint custom
 To avoid running commands manually each time, add these targets to your `Makefile`:
 
 ```makefile
-
-```makefile
-
 .PHONY: uber_lint
 uber_lint: # Run Uber Go style linter (builds plugin if needed)
 	$Q echo "Running Uber Go style linter (with golangci-lint)..."
-	$Q if [ ! -f "./custom-gcl" ]; then echo "Building custom golangci-lint with uber-go-lint-style plugin..."; golangci-lint custom || exit 1; fi; echo "Running Uber Go style golangci-lint..." ;./custom-gcl run
+	$Q if [ ! -f "./custom-gcl" ]; then echo "Building custom golangci-lint with uber-go-lint-style plugin..."; golangci-lint custom || exit 1; fi; echo "Running Uber Go style golangci-lint..." ;./custom-gcl run --config .golangci.uber_style.yml
 
 .PHONY: uber_clean
 uber_clean: # Clean Uber Go style linter artifacts
