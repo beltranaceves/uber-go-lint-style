@@ -117,8 +117,8 @@ severity:
 
 **Disabling plugin rules via YAML**
 
-The `uber-go-lint-style` plugin accepts a YAML string in the `disabled_rules_yaml`
-setting inside your `.golangci.yml` to disable specific analyzers at runtime.
+The `uber-go-lint-style` plugin accepts a YAML string in the `settings`
+section inside your `.golangci.yml` to disable specific analyzers at runtime.
 You can provide either a plain YAML list or a mapping with a `disabled:` (or
 `disable:`) key. The entries must match the analyzer name returned by a rule's
 `BuildAnalyzer()`.
@@ -126,12 +126,15 @@ You can provide either a plain YAML list or a mapping with a `disabled:` (or
 Example (`.golangci.yml`):
 
 ```yaml
-linters-settings:
-	uber-go-lint-style:
-		disabled_rules_yaml: |
-			- TodoRule
-			- AtomicRule
-			- MapInitRule
+linters:
+	settings:
+		custom:
+			uber-go-lint-style:
+				settings:
+					disabled_rules_yaml: |
+						- TodoRule
+						- AtomicRule
+						- MapInitRule
 ```
 
 **Step 3: Build the custom binary and run**
