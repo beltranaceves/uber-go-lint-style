@@ -205,7 +205,7 @@ func createConfigFiles() error {
 
 	// Handle Makefile specially - merge if it exists. Provide chosen config path
 	// so the Makefile points to the correct golangci config.
-	if err := createOrMergeMakefile(chosenGolangci); err != nil {
+	if err := createOrMergeMakefileWithConfig(chosenGolangci); err != nil {
 		return err
 	}
 
@@ -712,7 +712,7 @@ func promptForAction(filename string, options ...string) string {
 	}
 }
 
-func createOrMergeMakefile(configName string) error {
+func createOrMergeMakefileWithConfig(configName string) error {
 	const makefileName = "Makefile"
 
 	if isVerbose() {
@@ -795,6 +795,11 @@ func createOrMergeMakefile(configName string) error {
 		fmt.Printf("  ℹ️  Skipped %s\n", makefileName)
 		return nil
 	}
+}
+
+// Backwards-compatible no-arg wrapper used by tests and older callers.
+func createOrMergeMakefile() error {
+	return createOrMergeMakefileWithConfig("")
 }
 
 // indent adds leading whitespace to each line of text
