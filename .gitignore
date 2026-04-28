@@ -14,4 +14,4 @@ coverage.out
 uber-go-lint-style.test
 ./setup
 setup
-cadence/
+test-projects/

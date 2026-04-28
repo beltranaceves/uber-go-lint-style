@@ -82,12 +82,12 @@ severity:
       severity: warning
 `
 
-const makefile = `
+const makefileTemplate = `
 
 .PHONY: uber_lint
 uber_lint: # Run Uber Go style linter (builds plugin if needed)
 	$Q echo "Running Uber Go style linter (with golangci-lint)..."
-	$Q if [ ! -f "./custom-gcl" ]; then echo "Building custom golangci-lint with uber-go-lint-style plugin..."; golangci-lint custom || exit 1; fi; echo "Running Uber Go style golangci-lint..." ;./custom-gcl run --config .golangci.uber_style.yml
+	$Q if [ ! -f "./custom-gcl" ]; then echo "Building custom golangci-lint with uber-go-lint-style plugin..."; golangci-lint custom || exit 1; fi; echo "Running Uber Go style golangci-lint..." ;./custom-gcl run --config %s
 
 .PHONY: uber_clean
 uber_clean: # Clean Uber Go style linter artifacts
@@ -145,12 +145,40 @@ func createConfigFiles() error {
 	// Create YAML config files with interactive prompts
 	// If the repo already contains any common golangci config filename
 	// prefer prompting on that file so the user gets offered a merge.
-	golangciNames := []string{".golangci.uber_style.yml", ".golangci.yml", "golangci.yml", ".golangci.yaml", "golangci.yaml"}
-	chosenGolangci := ".golangci.uber_style.yml"
-	for _, n := range golangciNames {
-		if _, err := os.Stat(n); err == nil {
-			chosenGolangci = n
-			break
+	golangciNames := []string{".golangci.uber_lint.yml", ".golangci.yml", "golangci.yml", ".golangci.yaml", "golangci.yaml"}
+
+	// If a plain `.golangci.yml` exists, explicitly ask whether to merge
+	// into it or create a separate `.golangci.uber_lint.yml`.
+	chosenGolangci := ""
+	if _, err := os.Stat(".golangci.yml"); err == nil {
+		action := promptForAction(".golangci.yml", "merge", "create", "skip", "view")
+		switch action {
+		case "merge":
+			chosenGolangci = ".golangci.yml"
+		case "create":
+			chosenGolangci = ".golangci.uber_lint.yml"
+		case "view":
+			existing, _ := os.ReadFile(".golangci.yml")
+			fmt.Printf("  Existing content:\n%s\n", indent(string(existing), "    "))
+			// ask again after showing
+			action = promptForAction(".golangci.yml", "merge", "create", "skip")
+			if action == "merge" {
+				chosenGolangci = ".golangci.yml"
+			} else if action == "create" {
+				chosenGolangci = ".golangci.uber_lint.yml"
+			}
+		case "skip":
+			chosenGolangci = ""
+		}
+	} else {
+		for _, n := range golangciNames {
+			if _, err := os.Stat(n); err == nil {
+				chosenGolangci = n
+				break
+			}
+		}
+		if chosenGolangci == "" {
+			chosenGolangci = ".golangci.uber_lint.yml"
 		}
 	}
 
@@ -164,7 +192,9 @@ func createConfigFiles() error {
 
 	yamlFiles := map[string]string{
 		".custom-gcl.yml": customGcl,
-		chosenGolangci:    golangciCfg,
+	}
+	if chosenGolangci != "" {
+		yamlFiles[chosenGolangci] = golangciCfg
 	}
 
 	for filename, content := range yamlFiles {
@@ -173,8 +203,9 @@ func createConfigFiles() error {
 		}
 	}
 
-	// Handle Makefile specially - merge if it exists
-	if err := createOrMergeMakefile(); err != nil {
+	// Handle Makefile specially - merge if it exists. Provide chosen config path
+	// so the Makefile points to the correct golangci config.
+	if err := createOrMergeMakefile(chosenGolangci); err != nil {
 		return err
 	}
 
@@ -681,12 +712,20 @@ func promptForAction(filename string, options ...string) string {
 	}
 }
 
-func createOrMergeMakefile() error {
+func createOrMergeMakefile(configName string) error {
 	const makefileName = "Makefile"
 
 	if isVerbose() {
 		fmt.Printf("  ℹ️  createOrMergeMakefile verbose enabled\n")
 	}
+
+	// Build the Makefile content using the chosen config (fall back to
+	// `.golangci.uber_lint.yml` when none provided).
+	cfg := configName
+	if cfg == "" {
+		cfg = ".golangci.uber_lint.yml"
+	}
+	makefile := fmt.Sprintf(makefileTemplate, cfg)
 
 	// Check if Makefile exists
 	content, err := os.ReadFile(makefileName)
