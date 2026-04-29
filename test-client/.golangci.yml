@@ -1,0 +1,29 @@
+linters:
+    default: none
+    enable:
+        - uber-go-lint-style
+    settings:
+        custom:
+            uber-go-lint-style:
+                description: Uber Go style guide linter
+                original-url: github.com/beltranaceves/uber-go-lint-style
+                settings:
+                    disabled_rules_yaml: |
+                        - todo
+                type: module
+linters-settings:
+    custom:
+        uber-go-lint-style:
+            description: Uber Go style guide linter
+            original-url: github.com/beltranaceves/uber-go-lint-style
+            settings:
+                disabled_rules_yaml: |
+                    - todo
+            type: module
+severity:
+    default: info
+    rules:
+        - linters:
+            - uber-go-lint-style
+          severity: warning
+version: "2"
