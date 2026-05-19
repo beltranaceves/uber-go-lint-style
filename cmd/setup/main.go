@@ -75,7 +75,7 @@ linters:
             - todo
 
 severity:
-  default-severity: info
+  default: info
   rules:
     - linters:
         - uber-go-lint-style
