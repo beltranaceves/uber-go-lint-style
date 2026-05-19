@@ -18,6 +18,7 @@ A golangci-lint plugin for [Uber's Go Style Guide](https://github.com/uber-go/gu
 ## Table of Contents
 
 - [Overview](#overview)
+- [Sample runs](#samples)
 - [Installation](#installation)
 	- [Prerequisites](#prerequisites)
 	- [Setup Option 1: Automated Setup (Recommended)](#setup-option-1-automated-setup-recommended)
@@ -36,6 +37,171 @@ This is a custom linter that strives to enforce Uber's internal Go coding standa
 
 > [!WARNING]
 > There are many subjective rules that are enforced through the use of heuristics. We recommend configuring it to report findings as warnings by default (see the "Installation" section for an example). Teams can opt into stricter severities when appropriate.
+
+## Samples
+<details>
+<summary>Cadence - 19/05/2026</summary>
+
+```bash
+echo "Running Uber Go style linter (with golangci-lint)..."
+Running Uber Go style linter (with golangci-lint)...
+if [ ! -f "./custom-gcl" ]; then echo "Building custom golangci-lint with uber-go-lint-style plugin..."; golangci-lint custom || exit 1; fi; echo "Running Uber Go style golangci-lint..." ;./custom-gcl run --config .golangci.yml
+Running Uber Go style golangci-lint...
+common/clock/event_timer_gate.go:45:3: struct_embed: embedded field should be placed at the top of the struct (uber-go-lint-style)
+                sync.RWMutex
+                ^
+common/clock/event_timer_gate.go:57:25: struct_field_key: use field names when initializing structs; specify fields like `Field: value` (uber-go-lint-style)
+                fireTime:    time.Time{},
+                                      ^
+common/clock/event_timer_gate.go:79:2: var_scope: identifier 'active' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+        active := t.currentTime.Before(t.fireTime)
+        ^
+common/clock/event_timer_gate.go:113:24: struct_field_key: use field names when initializing structs; specify fields like `Field: value` (uber-go-lint-style)
+        t.fireTime = time.Time{}
+                              ^
+common/clock/event_timer_gate_test.go:44:7: struct_pointer: use &T instead of new T when initializing struct references (uber-go-lint-style)
+        s := new(eventTimerGateSuite)
+             ^
+common/clock/ratelimiter.go:186:35: struct_field_key: use field names when initializing structs; specify fields like `Field: value` (uber-go-lint-style)
+        _ Reservation = deniedReservation{}
+                                         ^
+common/clock/ratelimiter.go:228:2: var_scope: identifier 'newNow' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+        newNow := r.timesource.Now() // caution: must be after acquiring the lock
+        ^
+common/clock/ratelimiter.go:280:2: var_scope: identifier 'res' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+        res := r.limiter.ReserveN(now, 1)
+        ^
+common/clock/ratelimiter.go:358:5: var_scope: identifier 'err' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+        if err := ctx.Err(); err != nil {
+           ^
+common/clock/ratelimiter.go:378:2: var_scope: identifier 'delay' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+        delay := res.DelayFrom(now)
+        ^
+common/clock/ratelimiter.go:463:2: var_scope: identifier 'called' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+        called := false
+        ^
+common/clock/ratelimiter_bench_test.go:97:2: decl_group: group adjacent var declarations into a single var block (uber-go-lint-style)
+        var runSerial runType = func(b *testing.B, each func(int) bool) {
+        ^
+common/clock/ratelimiter_bench_test.go:100:7: var_scope: identifier 'i' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                for i := 0; i < b.N; i++ {
+                    ^
+common/clock/ratelimiter_bench_test.go:109:3: var_scope: identifier 'allowedPeriod' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                allowedPeriod := fmt.Sprintf(allowedPeriodFmt, "n/a")
+                ^
+common/clock/ratelimiter_bench_test.go:118:16: var_scope: identifier 'denied' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                var allowed, denied atomic.Int64
+                             ^
+common/clock/ratelimiter_bench_test.go:120:4: var_scope: identifier 'n' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                        n := 0
+                        ^
+common/clock/ratelimiter_bench_test.go:132:3: var_scope: identifier 'allowedPeriod' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                allowedPeriod := fmt.Sprintf(allowedPeriodFmt, "n/a")
+                ^
+common/clock/ratelimiter_bench_test.go:151:6: var_scope: identifier 'rl' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                                        rl := rate.NewLimiter(rate.Every(normalLimit), burst)
+                                        ^
+common/clock/ratelimiter_bench_test.go:157:6: var_scope: identifier 'rl' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                                        rl := NewRatelimiter(rate.Every(normalLimit), burst)
+                                        ^
+common/clock/ratelimiter_bench_test.go:163:6: var_scope: identifier 'ts' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                                        ts := NewMockedTimeSource()
+                                        ^
+common/clock/ratelimiter_bench_test.go:206:7: var_scope: identifier 'r' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                                                r := rl.Reserve()
+                                                ^
+common/clock/ratelimiter_bench_test.go:229:7: var_scope: identifier 'r' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                                                r := rl.ReserveN(now, 1)
+                                                ^
+common/clock/ratelimiter_bench_test.go:262:6: var_scope: identifier 'ts' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                                        ts := NewMockedTimeSource()
+                                        ^
+common/clock/ratelimiter_bench_test.go:318:8: var_scope: identifier 'rl' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                                                        rl := NewRatelimiter(limit, burst)
+                                                        ^
+common/clock/ratelimiter_comparison_test.go:86:7: var_scope: identifier 'testnum' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                for testnum := 0; !t.Failed() && time.Now().Before(deadline); testnum++ {
+                    ^
+common/clock/ratelimiter_comparison_test.go:120:5: var_scope: identifier 'seed' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                                seed := time.Now().UnixNano()
+                                ^
+common/clock/ratelimiter_comparison_test.go:256:3: var_scope: identifier 'round' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                round := make([]string, events)
+                ^
+common/clock/ratelimiter_comparison_test.go:269:3: var_scope: identifier 'set' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                set := rng.Intn(len(schedule) + 1)
+                ^
+common/clock/ratelimiter_comparison_test.go:320:2: var_scope: identifier 'compressed' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+        compressed := NewRateLimiterWithTimeSource(compressedTS, limit, burst)
+        ^
+common/clock/ratelimiter_comparison_test.go:325:2: var_scope: identifier 'compressedReplay' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+        compressedReplay := make([][]func(t *testing.T), rounds)
+        ^
+common/clock/ratelimiter_comparison_test.go:456:6: var_scope: identifier 'done' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                                        done := make(chan struct{})
+                                        ^
+common/clock/ratelimiter_comparison_test.go:547:2: var_scope: identifier 'maxLatency' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+        maxLatency := maxDur(actual, wrapped, mocked)
+        ^
+common/clock/ratelimiter_comparison_test.go:548:2: var_scope: identifier 'minLatency' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+        minLatency := minDur(actual, wrapped, mocked)
+        ^
+common/clock/ratelimiter_comparison_test.go:573:3: var_scope: identifier 'assertNoWait' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                assertNoWait := func(what string, wait time.Duration) {
+                ^
+common/clock/ratelimiter_comparison_test.go:585:3: var_scope: identifier 'assertWaited' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                assertWaited := func(what string, wait time.Duration) {
+                ^
+common/clock/ratelimiter_test.go:42:3: var_scope: identifier 'name' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                name := name
+                ^
+common/clock/ratelimiter_test.go:45:4: var_scope: identifier 'ts' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                        ts := func() MockedTimeSource { return nil }
+                        ^
+common/clock/ratelimiter_test.go:293:5: struct_field_zero: omit zero-valued field "drainFirst" from struct literal; let Go set the zero value (uber-go-lint-style)
+                                drainFirst: false,
+                                ^
+common/clock/ratelimiter_test.go:306:5: struct_field_zero: omit zero-valued field "allowed" from struct literal; let Go set the zero value (uber-go-lint-style)
+                                allowed: 0,
+                                ^
+common/clock/ratelimiter_test.go:353:5: struct_field_zero: omit zero-valued field "drainFirst" from struct literal; let Go set the zero value (uber-go-lint-style)
+                                drainFirst: false,
+                                ^
+common/clock/ratelimiter_test.go:399:5: struct_field_zero: omit zero-valued field "allowed" from struct literal; let Go set the zero value (uber-go-lint-style)
+                                allowed:     0,
+                                ^
+common/clock/ratelimiter_test.go:447:11: type_assert: use the comma-ok form for type assertions (uber-go-lint-style)
+                impl := rl.(*ratelimiter)
+                        ^
+common/clock/ratelimiter_test.go:451:12: type_assert: use the comma-ok form for type assertions (uber-go-lint-style)
+                rimpl := r.(*allowedReservation)
+                         ^
+common/clock/sustain.go:25:1: decl_group: group import declarations into a single import block (uber-go-lint-style)
+import "time"
+^
+common/clock/sustain.go:48:3: var_scope: identifier 'now' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                now := s.source.Now()
+                ^
+common/clock/sustain.go:68:3: var_scope: identifier 'now' can be declared in the inner block to reduce its scope (uber-go-lint-style)
+                now := s.source.Now()
+                ^
+common/clock/sustain_test.go:111:4: struct_field_zero: omit zero-valued field "duration" from struct literal; let Go set the zero value (uber-go-lint-style)
+                        duration: 0,
+                        ^
+common/clock/sustain_test.go:210:4: struct_field_zero: omit zero-valued field "duration" from struct literal; let Go set the zero value (uber-go-lint-style)
+                        duration: 0,
+                        ^
+common/clock/timer_gate.go:47:3: struct_embed: add an empty line between embedded fields and regular fields (uber-go-lint-style)
+                timeSource TimeSource
+                ^
+common/clock/timer_gate_test.go:43:7: struct_pointer: use &T instead of new T when initializing struct references (uber-go-lint-style)
+        s := new(timerGateSuite)
+             ^
+50 issues:
+* uber-go-lint-style: 50
+make: *** [Makefile:6: uber_lint] Error 1
+```
+</details>
 
 ## Installation
 
