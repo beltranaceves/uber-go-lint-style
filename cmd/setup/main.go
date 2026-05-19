@@ -66,7 +66,7 @@ linters:
   settings:
     custom:
       uber-go-lint-style:
-        type: "module"
+        type: module
         description: "Uber Go style guide linter"
         original-url: "github.com/beltranaceves/uber-go-lint-style"
         # Disabled rules provided as YAML text. By default exclude TodoRule.
@@ -75,7 +75,7 @@ linters:
             - todo
 
 severity:
-  default: info
+  default-severity: info
   rules:
     - linters:
         - uber-go-lint-style
@@ -535,6 +535,15 @@ func mergeSeverityRules(cfg map[string]any) bool {
 		"severity": "warning",
 	}
 	severity["rules"] = append(rules, severityRule)
+	// Ensure a default severity is present. Some existing configs use
+	// `default` (v2 style) or `default-severity` (older style). If neither
+	// is defined, add a conservative `default: info` so golangci-lint
+	// does not reject the merged config with "no default severity defined".
+	if _, hasDefault := severity["default"]; !hasDefault {
+		if _, hasDefaultHyphen := severity["default-severity"]; !hasDefaultHyphen {
+			severity["default"] = "info"
+		}
+	}
 	return true
 }
 
